@@ -1,0 +1,544 @@
+{
+  "DataUpdated": "2025-10-09T14:32:00",
+  "groups": [
+    {
+      "name": "AX-GROUP1",
+      "description": "Accounting Only",
+      "domainName": "TEST",
+      "secureId": "99999999999999999999999999999999999",
+      "id": 47,
+      "isNative": false,
+      "isWindowsSecurity": true,
+      "isOtherSecurity": false,
+      "providerId": "99999999999999999999999999999999999",
+      "users": [
+        {
+          "SamAccountName": "123456",
+          "Name": "Jane Doe",
+          "Department": "Facilities-Admin",
+          "Title": "Facilities, VP Facilities",
+          "Manager": null
+        }
+      ],
+      "appPermissions": [
+        {
+          "appId": 0,
+          "userId": -47,
+          "permConfig": 1,
+          "appName": null
+        },
+        {
+          "appId": 48,
+          "userId": -47,
+          "permView": 1,
+          "permPrint": 1,
+          "appName": "ACCOUNTING"
+        },
+		 {
+          "appId": 99,
+          "userId": -47,
+          "permBatchIndex": 1,
+          "appName": "ACCOUNTING2"
+        },
+		{
+          "appId": 4,
+          "userId": -49,
+          "appName": "MEMBREC",
+          "permBatchScan": 1
+          
+        }
+      ]
+    },
+    {
+      "name": "AX-GROUP2",
+      "description": "Full Authority",
+      "domainName": "TEST",
+      "secureId": "99999999999999999999999999999999999",
+      "id": 49,
+      "isNative": false,
+      "isWindowsSecurity": true,
+      "isOtherSecurity": false,
+      "providerId": "99999999999999999999999999999999999",
+      "users": [
+	    {
+          "SamAccountName": "123456",
+          "Name": "Jane Doe",
+          "Department": "Facilities-Admin",
+          "Title": "Facilities, VP Facilities",
+          "Manager": null
+        },
+        {
+          "SamAccountName": "1933",
+          "Name": "Dingo Doe",
+          "Department": "Compliance",
+          "Title": "Compliance Officer",
+          "Manager": null
+        },
+        {
+          "SamAccountName": "1944",
+          "Name": "Jimmy Doe",
+          "Department": "Facilities-Admin",
+          "Title": "Sr Manager Administration",
+          "Manager": null
+        }
+      ],
+      "appPermissions": [
+        {
+          "appId": 0,
+          "userId": -49,
+          "appName": null,
+          "permScanOnLine": 1,
+          "permBatchScan": 1,
+          "permBatchIndex": 1,
+          "permModifyIndex": 1,
+          "permAddObject": 1,
+          "permAddPage": 1,
+          "permDeleteDoc": 1,
+          "permDeletePage": 1,
+          "permDeleteObject": 1,
+          "permCreateApp": 1,
+          "permModifyApp": 1,
+          "permDeleteApp": 1,
+          "permUserSecurityAdmin": 1,
+          "permDocLevelSecAdmin": 1,
+          "permAutoIndexFileMaint": 1,
+          "permKeyRefFileMaint": 1,
+          "permCOLDImportMaint": 1,
+          "permCOLDImport": 1,
+          "permView": 1,
+          "permFaxIn": 1,
+          "permFaxOut": 1,
+          "permPrint": 1,
+          "permAutoIndexImport": 1,
+          "permRefFileImport": 1,
+          "permMigrateApp": 1,
+          "permImageUtilities": 1,
+          "permIndexImageImport": 1,
+          "permAEAdmin": 1,
+          "permConfig": 1,
+          "permEditRedactions": 1,
+          "permEditAnnotations": 1,
+          "permMultiLogins": 1,
+          "permFullTextIndex": 1,
+          "permFullTextQuery": 1,
+          "permOCR": 1,
+          "permScanFix": 1,
+          "permBatchExtract": 1,
+          "permGlobalAnnot": 1,
+          "permCXReports": 1,
+          "permCreateAnnotations": 1,
+          "permCreateRedactions": 1,
+          "permRetentionUser": 1,
+          "permRetentionAdmin": 1
+        },
+        {
+          "appId": 4,
+          "userId": -49,
+          "appName": "MEMBREC",
+          "permScanOnLine": 1,
+          "permBatchScan": 1,
+          "permBatchIndex": 1,
+          "permModifyIndex": 1,
+          "permAddObject": 1,
+          "permAddPage": 1,
+          "permDeleteDoc": 1,
+          "permDeletePage": 1,
+          "permDeleteObject": 1,
+          "permCreateApp": 1,
+          "permModifyApp": 1,
+          "permDeleteApp": 1,
+          "permUserSecurityAdmin": 1,
+          "permDocLevelSecAdmin": 1,
+          "permAutoIndexFileMaint": 1,
+          "permKeyRefFileMaint": 1,
+          "permCOLDImportMaint": 1,
+          "permCOLDImport": 1,
+          "permView": 1,
+          "permFaxIn": 1,
+          "permFaxOut": 1,
+          "permPrint": 1,
+          "permAutoIndexImport": 1,
+          "permRefFileImport": 1,
+          "permMigrateApp": 1,
+          "permImageUtilities": 1,
+          "permIndexImageImport": 1,
+          "permEditRedactions": 1,
+          "permEditAnnotations": 1,
+          "permFullTextIndex": 1,
+          "permFullTextQuery": 1,
+          "permOCR": 1,
+          "permScanFix": 1,
+          "permBatchExtract": 1,
+          "permGlobalAnnot": 1,
+          "permCXReports": 1,
+          "permCreateAnnotations": 1,
+          "permCreateRedactions": 1,
+          "permRetentionUser": 1,
+          "permRetentionAdmin": 1
+        }
+      ]
+    },
+    {
+      "name": "AX-GROUP3",
+      "description": "Annotate in MR POST MisREP BC",
+      "domainName": "TEST",
+      "secureId": "99999999999999999999999999999999999",
+      "id": 50,
+      "isNative": false,
+      "isWindowsSecurity": true,
+      "isOtherSecurity": false,
+      "providerId": "99999999999999999999999999999999999",
+      "users": [
+				  {
+					  "SamAccountName": "1995",
+					  "Name": "Jane Doe",
+					  "Department": "Facilities-Admin",
+					  "Title": "Facilities, VP Facilities",
+					  "Manager": null
+				  },
+				  {
+					  "SamAccountName":  "1996",
+					  "Name":  "Jane Doe",
+					  "Department":  "Finance",
+					  "Title":  "Budget/Profitability Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "1997",
+					  "Name":  "Bill Doe",
+					  "Department":  "Learning and Development",
+					  "Title":  "Sales Training Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "1998",
+					  "Name":  "Jane Doe",
+					  "Department":  "Treasury Management",
+					  "Title":  "Treasury Mgmt Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "1999",
+					  "Name":  "Jane Doe",
+					  "Department":  "Account Services",
+					  "Title":  "Account Services IRA/Estate Settlement Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2000",
+					  "Name":  "Jane Doe",
+					  "Department":  "Account Services",
+					  "Title":  "Account Services Supervisor",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2001",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Credit Operations",
+					  "Title":  "Member Credit Solutions Operations Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2002",
+					  "Name":  "Jane Doe",
+					  "Department":  "Lending and Credit Systems",
+					  "Title":  "Credit Systems Analyst",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2003",
+					  "Name":  "Jane Doe",
+					  "Department":  "Universal Branch Associate",
+					  "Title":  "Universal Banker",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2004",
+					  "Name":  "Jane Doe",
+					  "Department":  "ATM Services",
+					  "Title":  "ATM Specialist II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2005",
+					  "Name":  "Jane Doe",
+					  "Department":  "Account Services",
+					  "Title":  "Account Services Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2006",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Credit Operations",
+					  "Title":  "Recovery Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2007",
+					  "Name":  "Jane Doe",
+					  "Department":  "Account Services",
+					  "Title":  "Account Services IRA/Estate Settlement Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2008",
+					  "Name":  "Jane Doe",
+					  "Department":  "Card Services",
+					  "Title":  "Fraud Dispute Chargeback Specialist II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2009",
+					  "Name":  "Jane Doe",
+					  "Department":  "Retail Delivery Administration",
+					  "Title":  "Regional Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2010",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Credit Operations",
+					  "Title":  "Recovery Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2011",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Member Service Lender",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2012",
+					  "Name":  "Jane Doe",
+					  "Department":  "Learning and Development",
+					  "Title":  "Acct Svcs Tech Writer",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2013",
+					  "Name":  "Jane Doe",
+					  "Department":  "Treasury Management",
+					  "Title":  "Treasury Mgmt Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2014",
+					  "Name":  "Jane Doe",
+					  "Department":  "Fraud Intelligence",
+					  "Title":  "Fraud Analyst",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2015",
+					  "Name":  "Jane Doe",
+					  "Department":  "Card Services",
+					  "Title":  "Fraud Disp Charge Spec II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2016",
+					  "Name":  "Jane Doe",
+					  "Department":  "Card Services",
+					  "Title":  "Fraud Dispute Chargeback Coordinator",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2017",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2018",
+					  "Name":  "Jane Doe",
+					  "Department":  "Teller Services",
+					  "Title":  "Branch Support Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2019",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2020",
+					  "Name":  "Jane Doe",
+					  "Department":  "Electronic Payments",
+					  "Title":  "Electronic Payments Supervisor",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2021",
+					  "Name":  "Jane Doe",
+					  "Department":  "Learning and Development",
+					  "Title":  "Retail Delivery Trainer",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2022",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Safe Deposit Clerk",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2023",
+					  "Name":  "Jane Doe",
+					  "Department":  "Accounting",
+					  "Title":  "Accounting Manager",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2024",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager I",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2025",
+					  "Name":  "Jane Doe",
+					  "Department":  "Electronic Payments",
+					  "Title":  "Electronic Payments Specialist",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2026",
+					  "Name":  "Jane Doe",
+					  "Department":  "Accounting",
+					  "Title":  "Accounting Supervisor",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2027",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager I",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2028",
+					  "Name":  "Jane Doe",
+					  "Department":  "ATM Services",
+					  "Title":  "ATM Coordinator",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2029",
+					  "Name":  "Jane Doe",
+					  "Department":  "Learning and Development",
+					  "Title":  "Learning and Development Training Specialist/Supervisor",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2030",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager I",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2031",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager I",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2032",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Branch Manager II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2033",
+					  "Name":  "Jane Doe",
+					  "Department":  "Card Services",
+					  "Title":  "Fraud Dispute Chargeback Specialist II",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2034",
+					  "Name":  "Jane Doe",
+					  "Department":  "Learning and Development",
+					  "Title":  "Training Coordinator",
+					  "Manager":  null
+				  },
+				  {
+					  "SamAccountName":  "2035",
+					  "Name":  "Jane Doe",
+					  "Department":  "Member Services",
+					  "Title":  "Safe Deposit Clerk",
+					  "Manager":  null
+				  }
+			  ],
+      "appPermissions": [
+        {
+          "appId": 4,
+          "userId": -50,
+          "appName": "MEMBREC",
+          "permView": 1,
+          "permPrint": 1,
+          "permEditRedactions": 1,
+          "permEditAnnotations": 1,
+          "permGlobalAnnot": 1,
+          "permCreateAnnotations": 1,
+          "permCreateRedactions": 1
+        },
+        {
+          "appId": 37,
+          "userId": -50,
+          "appName": "AP",
+          "permView": 1,
+          "permPrint": 1,
+          "permEditRedactions": 1,
+          "permEditAnnotations": 1,
+          "permGlobalAnnot": 1,
+          "permCreateAnnotations": 1,
+          "permCreateRedactions": 1
+        }
+      ]
+    },
+    {
+      "name": "AX-GROUP4",
+      "description": "View AP",
+      "domainName": "TEST",
+      "secureId": "99999999999999999999999999999999999",
+      "id": 51,
+      "isNative": false,
+      "isWindowsSecurity": true,
+      "isOtherSecurity": false,
+      "providerId": "99999999999999999999999999999999999",
+      "users": [],
+      "appPermissions": [
+        {
+          "appId": 0,
+          "userId": -51,
+          "permConfig": 1,
+          "appName": null
+        },
+        {
+          "appId": 15,
+          "userId": -51,
+          "appName": "FDFILE",
+          "permView": 1,
+          "permPrint": 1,
+          "permConfig": 1
+        },
+        {
+          "appId": 37,
+          "userId": -51,
+          "appName": "AP",
+          "permView": 1,
+          "permPrint": 1,
+          "permConfig": 1
+        }
+      ]
+    }
+  ]
+}
