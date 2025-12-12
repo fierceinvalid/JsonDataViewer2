@@ -17,6 +17,7 @@ C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataV
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataViewer.AssemblyInfoInputs.cache
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataViewer.AssemblyInfo.cs
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataViewer.csproj.CoreCompileInputs.cache
+C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataViewer.sourcelink.json
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonData.2FDB647A.Up2Date
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\JsonDataViewer.dll
 C:\Users\laptopt14\JsonDataViewer\obj\Debug\net9.0-windows10.0.19041.0\refint\JsonDataViewer.dll

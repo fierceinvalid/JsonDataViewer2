@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Reflection;
 using System.IO;
 using Newtonsoft.Json;
 using JsonDataViewer.Models; 
@@ -85,8 +86,10 @@ namespace JsonDataViewer
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
-            // Placeholder for an About window/dialog
-            MessageBox.Show("JsonDataViewer v1.0", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+            var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            var name = asm.GetName().Name ?? "JsonDataViewer";
+            var version = asm.GetName().Version?.ToString() ?? "1.0.0";
+            MessageBox.Show($"{name} version {version}", "About", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void SendIssue_Click(object sender, RoutedEventArgs e)

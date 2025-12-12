@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Input; 
 using JsonDataViewer.Models; 
@@ -190,6 +191,9 @@ namespace JsonDataViewer.ViewModels
                     OnPropertyChanged(nameof(Panel1Header));
                     OnPropertyChanged(nameof(Panel2Header));
                     OnPropertyChanged(nameof(Panel3Header));
+                    OnPropertyChanged(nameof(Panel1ColumnHeader));
+                    OnPropertyChanged(nameof(Panel2ColumnHeader));
+                    OnPropertyChanged(nameof(Panel3ColumnHeader));
                 }
             }
         }
@@ -222,6 +226,21 @@ namespace JsonDataViewer.ViewModels
             CurrentViewMode == ViewMode.UserGroupAppPerm ? "Permissions" :
             CurrentViewMode == ViewMode.UserAppGroupPerm ? "Permissions" :
             "Groups";
+
+        public string Panel1ColumnHeader => 
+            CurrentViewMode == ViewMode.UserGroupAppPerm ? "Group" :
+            CurrentViewMode == ViewMode.UserAppGroupPerm ? "Application" :
+            "Permission";
+
+        public string Panel2ColumnHeader => 
+            CurrentViewMode == ViewMode.UserGroupAppPerm ? "Application" :
+            CurrentViewMode == ViewMode.UserAppGroupPerm ? "Group" :
+            "Application";
+
+        public string Panel3ColumnHeader => 
+            CurrentViewMode == ViewMode.UserGroupAppPerm ? "Permission" :
+            CurrentViewMode == ViewMode.UserAppGroupPerm ? "Permission" :
+            "Group";
 
 
         // --- Global Selection Properties ---
@@ -298,8 +317,92 @@ namespace JsonDataViewer.ViewModels
 
             ClearSelectedUserCommand = new RelayCommand(_ => ClearSelectedUser());
             ClearAllSelectionsCommand = new RelayCommand(_ => ExecuteClearAllSelections(), _ => IsAnythingSelected);
+            TogglePanel1SortCommand = new RelayCommand(_ => TogglePanel1Sort());
+            TogglePanel2SortCommand = new RelayCommand(_ => TogglePanel2Sort());
+            TogglePanel3SortCommand = new RelayCommand(_ => TogglePanel3Sort());
         }
-        
+
+        // Sort state properties for the User View small panels
+        private ListSortDirection? _panel1SortDirection;
+        public ListSortDirection? Panel1SortDirection
+        {
+            get => _panel1SortDirection;
+            set => SetProperty(ref _panel1SortDirection, value);
+        }
+
+        private ListSortDirection? _panel2SortDirection;
+        public ListSortDirection? Panel2SortDirection
+        {
+            get => _panel2SortDirection;
+            set => SetProperty(ref _panel2SortDirection, value);
+        }
+
+        private ListSortDirection? _panel3SortDirection;
+        public ListSortDirection? Panel3SortDirection
+        {
+            get => _panel3SortDirection;
+            set => SetProperty(ref _panel3SortDirection, value);
+        }
+
+        // Commands to toggle sorting for the small panels
+        public ICommand TogglePanel1SortCommand { get; }
+        public ICommand TogglePanel2SortCommand { get; }
+        public ICommand TogglePanel3SortCommand { get; }
+
+        private void TogglePanel1Sort()
+        {
+            var view = CollectionViewSource.GetDefaultView(Panel1ItemsSource);
+            if (view == null) return;
+            view.SortDescriptions.Clear();
+            if (Panel1SortDirection == ListSortDirection.Ascending)
+            {
+                Panel1SortDirection = ListSortDirection.Descending;
+                view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+            }
+            else
+            {
+                Panel1SortDirection = ListSortDirection.Ascending;
+                view.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            }
+            view.Refresh();
+        }
+
+        private void TogglePanel2Sort()
+        {
+            var view = CollectionViewSource.GetDefaultView(Panel2ItemsSource);
+            if (view == null) return;
+            view.SortDescriptions.Clear();
+            if (Panel2SortDirection == ListSortDirection.Ascending)
+            {
+                Panel2SortDirection = ListSortDirection.Descending;
+                view.SortDescriptions.Add(new SortDescription("AppName", ListSortDirection.Descending));
+            }
+            else
+            {
+                Panel2SortDirection = ListSortDirection.Ascending;
+                view.SortDescriptions.Add(new SortDescription("AppName", ListSortDirection.Ascending));
+            }
+            view.Refresh();
+        }
+
+        private void TogglePanel3Sort()
+        {
+            var view = CollectionViewSource.GetDefaultView(Panel3ItemsSource);
+            if (view == null) return;
+            view.SortDescriptions.Clear();
+            if (Panel3SortDirection == ListSortDirection.Ascending)
+            {
+                Panel3SortDirection = ListSortDirection.Descending;
+                view.SortDescriptions.Add(new SortDescription("PermissionName", ListSortDirection.Descending));
+            }
+            else
+            {
+                Panel3SortDirection = ListSortDirection.Ascending;
+                view.SortDescriptions.Add(new SortDescription("PermissionName", ListSortDirection.Ascending));
+            }
+            view.Refresh();
+        }
+
         // ---------------------------------------------
         // Public Properties for DataGrid SelectedItem Bindings
         // ---------------------------------------------
@@ -679,25 +782,21 @@ namespace JsonDataViewer.ViewModels
         public void FilterUsers(string filterText)
         {
             if (UsersView.View == null) return;
-
-            if (string.IsNullOrWhiteSpace(filterText) || filterText.ToLower() == "filter...")
+            if (string.IsNullOrWhiteSpace(filterText) || string.Equals(filterText, "filter...", StringComparison.OrdinalIgnoreCase))
             {
                 UsersView.View.Filter = null;
             }
             else
             {
-                string lowerFilter = filterText.ToLower();
                 UsersView.View.Filter = item =>
                 {
-                    if (!(item is User user)) return false; 
-                    
-                    if (user.SamAccountName?.ToLower().Contains(lowerFilter) == true) return true;
-                    if (user.Name?.ToLower().Contains(lowerFilter) == true) return true;
-                    if (user.Department?.ToLower().Contains(lowerFilter) == true) return true; 
-                    if (user.Title?.ToLower().Contains(lowerFilter) == true) return true;     
-                    if (user.Email?.ToLower().Contains(lowerFilter) == true) return true; 
-
-                    return false; 
+                    if (item is not User user) return false;
+                    if (!string.IsNullOrEmpty(user.SamAccountName) && user.SamAccountName.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                    if (!string.IsNullOrEmpty(user.Name) && user.Name.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                    if (!string.IsNullOrEmpty(user.Department) && user.Department.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                    if (!string.IsNullOrEmpty(user.Title) && user.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                    if (!string.IsNullOrEmpty(user.Email) && user.Email.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                    return false;
                 };
             }
             UsersView.View.Refresh();
@@ -745,14 +844,13 @@ namespace JsonDataViewer.ViewModels
             }
             else
             {
-                string lower = filterText.ToLower();
                 GroupUsersView.View.Filter = item =>
                 {
                     if (item is not User u) return false;
-                    return (u.Name?.ToLower().Contains(lower) == true)
-                        || (u.SamAccountName?.ToLower().Contains(lower) == true)
-                        || (u.Department?.ToLower().Contains(lower) == true)
-                        || (u.Title?.ToLower().Contains(lower) == true);
+                    return (!string.IsNullOrEmpty(u.Name) && u.Name.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.SamAccountName) && u.SamAccountName.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Department) && u.Department.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Title) && u.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0);
                 };
             }
             GroupUsersView.View.Refresh();
@@ -793,14 +891,13 @@ namespace JsonDataViewer.ViewModels
             }
             else
             {
-                string lower = filterText.ToLower();
                 AppUsersView.View.Filter = item =>
                 {
                     if (item is not User u) return false;
-                    return (u.Name?.ToLower().Contains(lower) == true)
-                        || (u.SamAccountName?.ToLower().Contains(lower) == true)
-                        || (u.Department?.ToLower().Contains(lower) == true)
-                        || (u.Title?.ToLower().Contains(lower) == true);
+                    return (!string.IsNullOrEmpty(u.Name) && u.Name.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.SamAccountName) && u.SamAccountName.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Department) && u.Department.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Title) && u.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0);
                 };
             }
             AppUsersView.View.Refresh();
@@ -874,14 +971,13 @@ namespace JsonDataViewer.ViewModels
             }
             else
             {
-                string lower = filterText.ToLower();
                 PermUsersView.View.Filter = item =>
                 {
                     if (item is not User u) return false;
-                    return (u.Name?.ToLower().Contains(lower) == true)
-                        || (u.SamAccountName?.ToLower().Contains(lower) == true)
-                        || (u.Department?.ToLower().Contains(lower) == true)
-                        || (u.Title?.ToLower().Contains(lower) == true);
+                    return (!string.IsNullOrEmpty(u.Name) && u.Name.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.SamAccountName) && u.SamAccountName.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Department) && u.Department.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (!string.IsNullOrEmpty(u.Title) && u.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0);
                 };
             }
             PermUsersView.View.Refresh();
