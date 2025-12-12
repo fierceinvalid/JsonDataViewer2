@@ -32,6 +32,7 @@ namespace JsonDataViewer.Models
         public string? SamAccountName { get; set; }
         
         [JsonProperty("users")]
+        [JsonConverter(typeof(SingleOrArrayConverter<User>))]
         public List<User> Users { get; set; } = new List<User>();
 
         [JsonProperty("appPermissions")]
