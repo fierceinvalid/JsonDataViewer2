@@ -1184,7 +1184,7 @@
                                 </Button>
                                 <DataGrid Grid.Row="1"
                                     Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
-                                    ItemsSource="{Binding PermApplications}"
+                                    ItemsSource="{Binding PermApps}"
                                     HeadersVisibility="None"
                                     IsReadOnly="True"
                                     AutoGenerateColumns="False"

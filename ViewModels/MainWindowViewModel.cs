@@ -7,7 +7,6 @@ using System.Windows.Data;
 using System.Windows.Input; 
 using JsonDataViewer.Models; 
 // The ViewMode enum is now accessed via the namespace JsonDataViewer.ViewModels
-
 namespace JsonDataViewer.ViewModels
 {
     // RelayCommand is provided in ViewModels/RelayCommand.cs
@@ -16,8 +15,6 @@ namespace JsonDataViewer.ViewModels
     {
         private GroupData? _data;
         private List<Group>? _allGroups;
-        
-        private Dictionary<string, string> _permissionMapping = new Dictionary<string, string>();
 
         public CollectionViewSource UsersView { get; } = new CollectionViewSource();
         public CollectionViewSource GroupUsersView { get; } = new CollectionViewSource();
@@ -301,7 +298,6 @@ namespace JsonDataViewer.ViewModels
         {
             _data = data;
             _allGroups = _data?.Groups;
-            LoadPermissionMapping();
             LoadAllUsers();
             LoadAllPermissions();
             SelectedUser = null; 
@@ -320,6 +316,15 @@ namespace JsonDataViewer.ViewModels
             TogglePanel1SortCommand = new RelayCommand(_ => TogglePanel1Sort());
             TogglePanel2SortCommand = new RelayCommand(_ => TogglePanel2Sort());
             TogglePanel3SortCommand = new RelayCommand(_ => TogglePanel3Sort());
+            ToggleGroupTabPanel1SortCommand = new RelayCommand(_ => ToggleSort(GroupTabPanel1SortDirection, dir => GroupTabPanel1SortDirection = dir, AllGroupsList, "Name"));
+            ToggleGroupTabPanel2SortCommand = new RelayCommand(_ => ToggleSort(GroupTabPanel2SortDirection, dir => GroupTabPanel2SortDirection = dir, GroupApps, "AppName"));
+            ToggleGroupTabPanel3SortCommand = new RelayCommand(_ => ToggleSort(GroupTabPanel3SortDirection, dir => GroupTabPanel3SortDirection = dir, AppPermissions, "PermissionName"));
+            ToggleAppTabPanel1SortCommand = new RelayCommand(_ => ToggleSort(AppTabPanel1SortDirection, dir => AppTabPanel1SortDirection = dir, AllAppsList, "AppName"));
+            ToggleAppTabPanel2SortCommand = new RelayCommand(_ => ToggleSort(AppTabPanel2SortDirection, dir => AppTabPanel2SortDirection = dir, AppGroups, "Name"));
+            ToggleAppTabPanel3SortCommand = new RelayCommand(_ => ToggleSort(AppTabPanel3SortDirection, dir => AppTabPanel3SortDirection = dir, AppPermissions, "PermissionName"));
+            TogglePermTabPanel1SortCommand = new RelayCommand(_ => ToggleSort(PermTabPanel1SortDirection, dir => PermTabPanel1SortDirection = dir, AllPermissionsList, "PermissionName"));
+            TogglePermTabPanel2SortCommand = new RelayCommand(_ => ToggleSort(PermTabPanel2SortDirection, dir => PermTabPanel2SortDirection = dir, PermApplications, "AppName"));
+            TogglePermTabPanel3SortCommand = new RelayCommand(_ => ToggleSort(PermTabPanel3SortDirection, dir => PermTabPanel3SortDirection = dir, PermGroups, "Name"));
         }
 
         // Sort state properties for the User View small panels
@@ -348,6 +353,67 @@ namespace JsonDataViewer.ViewModels
         public ICommand TogglePanel1SortCommand { get; }
         public ICommand TogglePanel2SortCommand { get; }
         public ICommand TogglePanel3SortCommand { get; }
+
+        // Sort state and commands for Group View panels
+        private ListSortDirection? _groupTabPanel1SortDirection;
+        public ListSortDirection? GroupTabPanel1SortDirection { get => _groupTabPanel1SortDirection; set => SetProperty(ref _groupTabPanel1SortDirection, value); }
+        public ICommand ToggleGroupTabPanel1SortCommand { get; }
+
+        private ListSortDirection? _groupTabPanel2SortDirection;
+        public ListSortDirection? GroupTabPanel2SortDirection { get => _groupTabPanel2SortDirection; set => SetProperty(ref _groupTabPanel2SortDirection, value); }
+        public ICommand ToggleGroupTabPanel2SortCommand { get; }
+
+        private ListSortDirection? _groupTabPanel3SortDirection;
+        public ListSortDirection? GroupTabPanel3SortDirection { get => _groupTabPanel3SortDirection; set => SetProperty(ref _groupTabPanel3SortDirection, value); }
+        public ICommand ToggleGroupTabPanel3SortCommand { get; }
+
+        // Sort state and commands for App View panels
+        private ListSortDirection? _appTabPanel1SortDirection;
+        public ListSortDirection? AppTabPanel1SortDirection { get => _appTabPanel1SortDirection; set => SetProperty(ref _appTabPanel1SortDirection, value); }
+        public ICommand ToggleAppTabPanel1SortCommand { get; }
+
+        private ListSortDirection? _appTabPanel2SortDirection;
+        public ListSortDirection? AppTabPanel2SortDirection { get => _appTabPanel2SortDirection; set => SetProperty(ref _appTabPanel2SortDirection, value); }
+        public ICommand ToggleAppTabPanel2SortCommand { get; }
+
+        private ListSortDirection? _appTabPanel3SortDirection;
+        public ListSortDirection? AppTabPanel3SortDirection { get => _appTabPanel3SortDirection; set => SetProperty(ref _appTabPanel3SortDirection, value); }
+        public ICommand ToggleAppTabPanel3SortCommand { get; }
+
+        // Sort state and commands for Perm View panels
+        private ListSortDirection? _permTabPanel1SortDirection;
+        public ListSortDirection? PermTabPanel1SortDirection { get => _permTabPanel1SortDirection; set => SetProperty(ref _permTabPanel1SortDirection, value); }
+        public ICommand TogglePermTabPanel1SortCommand { get; }
+
+        private ListSortDirection? _permTabPanel2SortDirection;
+        public ListSortDirection? PermTabPanel2SortDirection { get => _permTabPanel2SortDirection; set => SetProperty(ref _permTabPanel2SortDirection, value); }
+        public ICommand TogglePermTabPanel2SortCommand { get; }
+
+        private ListSortDirection? _permTabPanel3SortDirection;
+        public ListSortDirection? PermTabPanel3SortDirection { get => _permTabPanel3SortDirection; set => SetProperty(ref _permTabPanel3SortDirection, value); }
+        public ICommand TogglePermTabPanel3SortCommand { get; }
+
+        // Generic sorting method
+        private void ToggleSort(ListSortDirection? currentDirection, Action<ListSortDirection?> setDirection, System.Collections.IEnumerable itemsSource, string propertyName)
+        {
+            var view = CollectionViewSource.GetDefaultView(itemsSource);
+            if (view == null) return;
+
+            view.SortDescriptions.Clear();
+            ListSortDirection newDirection;
+
+            if (currentDirection == ListSortDirection.Ascending)
+            {
+                newDirection = ListSortDirection.Descending;
+            }
+            else
+            {
+                newDirection = ListSortDirection.Ascending;
+            }
+            setDirection(newDirection);
+            view.SortDescriptions.Add(new SortDescription(propertyName, newDirection));
+            view.Refresh();
+        }
 
         private void TogglePanel1Sort()
         {
@@ -535,7 +601,7 @@ namespace JsonDataViewer.ViewModels
             allGrantedPerms.ForEach(p => 
             {
                 string permCode = p.Key;
-                string permName = _permissionMapping.TryGetValue(permCode, out string? friendlyName) ? friendlyName : permCode;
+                string permName = permCode; // Use the code directly
                 
                 UserGroups.Add(new Group { GroupName = permName, SamAccountName = permCode }); 
             });
@@ -615,12 +681,11 @@ namespace JsonDataViewer.ViewModels
                         .Select(p => 
                         {
                             string permissionCode = p.Key;
-                            string displayValue = _permissionMapping.TryGetValue(permissionCode, out string? friendlyName) ? friendlyName : permissionCode;
                             
                             return new Permission
                             {
-                                PermissionName = displayValue,
-                                PermissionCode = permissionCode
+                                PermissionName = permissionCode, // Use the code directly
+                                PermissionCode = permissionCode,
                             };
                         }).ToList();
                     
@@ -690,55 +755,6 @@ namespace JsonDataViewer.ViewModels
             }
         }
 
-        private void LoadPermissionMapping()
-        {
-            _permissionMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "permScanOnline", "Scan / Index Online" },
-                { "permBatchScan", "Batch Scan" },
-                { "permBatchIndex", "Batch Index" },
-                { "permModifyIndex", "Modify Index" },
-                { "permAddObject", "Add Object" },
-                { "permAddPage", "Add Page" },
-                { "permDeleteDoc", "Delete Doc" },
-                { "permDeletePage", "Delete Page" },
-                { "permDeleteObject", "Delete Object" },
-                { "permCreateApp", "Create Application" },
-                { "permModifyApp", "Modify Application" },
-                { "permDeleteApp", "Delete Application" },
-                { "permUserSecurityAdmin", "User Security Admin" },
-                { "permDocLevelSecAdmin", "Doc Level Sec Admin" },
-                { "permAutoIndexFileMaint", "Auto Index Maintenance" },
-                { "permKeyRefFileMaint", "Key Reference Maintenance" },
-                { "permCOLDImportMaint", "COLD Import Maintenance" },
-                { "permCOLDImport", "COLD Import" },
-                { "permView", "View" },
-                { "permPrint", "Print" },
-                { "permFaxIn", "Fax In" },
-                { "permFaxOut", "Fax Out" },
-                { "permReffileImport", "Key Reference Import" },
-                { "permMigrateApp", "Migrate Application" },
-                { "permImageUtilities", "Image Utilities" },
-                { "permIndexImageImport", "Index/Image Import" },
-                { "permAdmin", "Administrator" },
-                { "permConfig", "Configure Workstation" },
-                { "permEditRedactions", "Edit Redactions" },
-                { "permEditAnnotations", "Edit Annotations" },
-                { "permMultipleLogins", "Multiple Logins" },
-                { "permFullTextIndex", "Full Text Index" },
-                { "permFullTextQuery", "Full Text Query" },
-                { "permOCR", "OCR" },
-                { "permScanFix", "Scan Fix" },
-                { "permBatchExtract", "COLD Batch Extract" },
-                { "permGlobalAnnot", "Global Annotations" },
-                { "permCXReports", "CX Reports" },
-                { "permCreateAnnotations", "Create Annotations" },
-                { "permCreateRedactions", "Create Redactions" },
-                { "permRetentionUser", "Retention User" },
-                { "permRetentionAdmin", "Retention Administrator" },
-            };
-        }
-
         private void LoadAllUsers()
         {
             if (_data?.Groups == null) return;
@@ -770,8 +786,7 @@ namespace JsonDataViewer.ViewModels
                 .Select(g => 
                 {
                     string permCode = g.Key;
-                    string displayName = _permissionMapping.TryGetValue(permCode, out string? friendly) ? friendly : permCode;
-                    return new Permission { PermissionName = displayName, PermissionCode = permCode };
+                    return new Permission { PermissionName = permCode, PermissionCode = permCode };
                 })
                 .OrderBy(p => p.PermissionName)
                 .ToList();
