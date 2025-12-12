@@ -1,8 +1,0 @@
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\JsonDataViewer.exe
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\JsonDataViewer.dll
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\JsonDataViewer.deps.json
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\JsonDataViewer.runtimeconfig.json
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\JsonDataViewer.pdb
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\Microsoft.Windows.SDK.NET.dll
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\WinRT.Runtime.dll
-C:\Users\laptopt14\JsonDataViewer\bin\Release\net9.0-windows10.0.19041.0\publish\Newtonsoft.Json.dll
