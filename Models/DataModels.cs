@@ -36,6 +36,7 @@ namespace JsonDataViewer.Models
         public List<User> Users { get; set; } = new List<User>();
 
         [JsonProperty("appPermissions")]
+        [JsonConverter(typeof(SingleOrArrayConverter<AppPermission>))]
         public List<AppPermission> AppPermissions { get; set; } = new List<AppPermission>();
 
         // XAML-friendly adapter properties (some XAML binds to these names)
@@ -74,6 +75,7 @@ namespace JsonDataViewer.Models
     public class User
     {
         public string SamAccountName { get; set; } = string.Empty;
+        [JsonProperty("UserName")]
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty; 
         public string Department { get; set; } = string.Empty;

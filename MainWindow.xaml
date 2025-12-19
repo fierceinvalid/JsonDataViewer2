@@ -8,123 +8,34 @@
         Title="AppEnhancer Permission Viewer" 
         Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
+        FontFamily="Roboto, Segoe UI, Arial"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}">
 
+    <Window.InputBindings>
+        <KeyBinding Key="F" Modifiers="Control" Command="{x:Static ApplicationCommands.Find}"/>
+    </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static ApplicationCommands.Find}" Executed="FocusFilter_Executed"/>
+    </Window.CommandBindings>
+
     <Window.Resources>
+        <!-- Accent + Neutral Brushes -->
+        <SolidColorBrush x:Key="AccentBrush" Color="#0A84FF"/>
+        <SolidColorBrush x:Key="AccentBrushLight" Color="#D6EBFF"/>
+        <SolidColorBrush x:Key="TabStripBackground" Color="#E8E8E8"/>
+        <SolidColorBrush x:Key="TabBorderBrush" Color="#DDDDDD"/>
         <SolidColorBrush x:Key="SelectedRowBackground" Color="#007ACC"/>
         <SolidColorBrush x:Key="SelectedRowForeground" Color="White"/>
         <SolidColorBrush x:Key="ClearButtonDefaultBackground" Color="#E8E8E8"/>
         
-        <Style TargetType="TabItem">
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="Margin" Value="0,0,1,0"/>
-            <Setter Property="Background" Value="#E0E0E0"/> <!-- Default background -->
-            <Setter Property="BorderBrush" Value="#CCCCCC"/> <!-- Default border color -->
-            <Setter Property="BorderThickness" Value="0"/>
-            
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Grid SnapsToDevicePixels="True">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="3"/> 
-                            </Grid.RowDefinitions>
-                            
-                            <Border Name="Border"
-                                    Grid.Row="0"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="1,1,1,1"
-                                    Margin="0"
-                                    CornerRadius="5,5,0,0">
-                                    <ContentPresenter x:Name="ContentSite"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalAlignment="Center"
-                                                    ContentSource="Header"
-                                                    Margin="{TemplateBinding Padding}"/>
-                                </Border>
-
-                            <Border x:Name="SelectionUnderline"
-                                    Grid.Row="1"
-                                    Height="3"
-                                    Background="#007ACC" 
-                                    Visibility="Collapsed"/>
-                            
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#F0F0F0"/> <!-- Softer hover background -->
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#007ACC"/> <!-- Highlight border on hover -->
-                                <Setter Property="Foreground" Value="#007ACC"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="White"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="White"/> <!-- Make top, left, right borders white -->
-                                <Setter TargetName="Border" Property="BorderThickness" Value="1,1,1,0"/> <!-- Hide bottom border -->
-                                <Setter TargetName="SelectionUnderline" Property="Visibility" Value="Visible"/> 
-                                <Setter Property="Foreground" Value="#007ACC"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="False">
-                                <Setter Property="Foreground" Value="#666666"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="TabControl">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TabControl}">
-                        <Grid ClipToBounds="True" SnapsToDevicePixels="True">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TabPanel Grid.Row="0"
-                                    IsItemsHost="True"
-                                    Margin="0,0,0,0"
-                                    Background="Transparent"
-                                    Panel.ZIndex="1"/>
-                            
-                            <Border Name="ContentBorder"
-                                    Grid.Row="1"
-                                    Background="White" 
-                                    Grid.ColumnSpan="2"
-                                    BorderBrush="#CCCCCC"
-                                    BorderThickness="1,1,1,1" 
-                                    Padding="10">
-                                <ContentPresenter ContentSource="SelectedContent"/>
-                            </Border>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
-            <Setter Property="Background" Value="White"/> 
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#333333"/>
-        </Style>
-        
+        <!-- ClearButtonStyle must be defined before TabControl style to be available in the template -->
         <Style x:Key="ClearButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Padding" Value="8,3"/> 
+            <Setter Property="Padding" Value="16,6"/> 
             <Setter Property="Margin" Value="0,0,15,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Background" Value="{StaticResource ClearButtonDefaultBackground}"/>
             <Setter Property="BorderBrush" Value="#BBBBBB"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -132,8 +43,9 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -143,7 +55,6 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="PART_Border" Property="Background" Value="#004675"/>
                                 <Setter TargetName="PART_Border" Property="BorderBrush" Value="#00385C"/>
-                                <Setter TargetName="PART_Border" Property="Padding" Value="8,2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -163,6 +74,212 @@
             </Style.Triggers>
         </Style>
 
+        <!-- PanelHeaderButtonStyle must also be defined before TabControl style -->
+        <Style x:Key="PanelHeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#ECECEC"/>
+            <Setter Property="Foreground" Value="#4A4A4A"/>
+            <Setter Property="BorderBrush" Value="#DADADA"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="10,3"/>
+            <Setter Property="FontFamily" Value="Roboto, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="BorderBrush" Value="#0A84FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Sidebar footer button styled like nav items with selection bar support -->
+        <Style x:Key="SidebarFooterNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="FontFamily" Value="Roboto, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="0,6,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="SelectionBar"
+                                    Grid.Column="0"
+                                    Background="{StaticResource AccentBrush}"
+                                    CornerRadius="2,0,0,2"
+                                    Visibility="Collapsed"/>
+
+                            <Border x:Name="HeaderBorder"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    CornerRadius="6">
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#F7F9FC"/>
+                                <Setter Property="Foreground" Value="#0A84FF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="SelectionBar" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#F2F6FF"/>
+                                <Setter Property="Foreground" Value="#0A84FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="0,6,0,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="SelectionBar"
+                                    Grid.Column="0"
+                                    Background="{StaticResource AccentBrush}"
+                                    CornerRadius="2,0,0,2"
+                                    Visibility="Collapsed"/>
+
+                                <Border x:Name="HeaderBorder"
+                                    Grid.Column="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="0"
+                                    CornerRadius="6"
+                                    Padding="0">
+                                <ContentPresenter x:Name="ContentSite"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"
+                                                  ContentSource="Header"
+                                                  Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#F7F9FC"/>
+                                <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#0A84FF"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="SelectionBar" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#F2F6FF"/>
+                                <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#0A84FF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="HeaderBorder" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabControl">
+            <Setter Property="TabStripPlacement" Value="Left"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabControl}">
+                        <Grid ClipToBounds="True" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Background="{StaticResource TabStripBackground}" BorderBrush="Transparent" BorderThickness="0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TabPanel IsItemsHost="True"
+                                              Margin="8,8,8,8"
+                                              Background="Transparent"
+                                              Panel.ZIndex="1"/>
+
+                                    <!-- Sidebar footer: Settings -->
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" Margin="8,0,8,8">
+                                        <Button Content="Settings"
+                                            Command="{Binding NavigateToSettingsCommand}"
+                                            Style="{StaticResource SidebarFooterNavButtonStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                                <Border Name="ContentBorder"
+                                    Grid.Column="1"
+                                    Background="White"
+                                    BorderBrush="#E5E5E5"
+                                    BorderThickness="1,1,1,1"
+                                    CornerRadius="6"
+                                    Padding="10">
+                                <ContentPresenter ContentSource="SelectedContent"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="Background" Value="White"/> 
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#333333"/>
+        </Style>
+
+
+        
         <Style x:Key="CleanDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#CCCCCC"/>
@@ -180,11 +297,38 @@
             <Setter Property="HorizontalGridLinesBrush" Value="#EEEEEE"/>
             <Setter Property="RowDetailsVisibilityMode" Value="Collapsed"/>
             <Setter Property="MaxHeight" Value="5000"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+            <Setter Property="ColumnHeaderHeight" Value="32"/>
+            <Setter Property="ColumnWidth" Value="SizeToCells"/>
+            <Setter Property="CanUserResizeColumns" Value="True"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8F8F8"/>
+            <Setter Property="RowBackground" Value="White"/>
+
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                        <Setter Property="Padding" Value="10,6"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="Background" Value="#F5F6F8"/>
+                        <Setter Property="Foreground" Value="#4A4A4A"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="BorderBrush" Value="#DDDDDD"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E9F2FF"/>
+                                <Setter Property="BorderBrush" Value="#0A84FF"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
             
             <Setter Property="RowStyle">
                 <Setter.Value>
                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Background" Value="White"/>
                         <Setter Property="SnapsToDevicePixels" Value="True"/>
                         
                         <Style.Resources>
@@ -193,6 +337,9 @@
                         </Style.Resources>
 
                         <Style.Triggers>
+                            <Trigger Property="AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="#F8F8F8"/>
+                            </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="{StaticResource SelectedRowBackground}"/>
                                 <Setter Property="Foreground" Value="{StaticResource SelectedRowForeground}"/>
@@ -206,7 +353,8 @@
                 <Setter.Value>
                     <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                         <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Padding" Value="5,3"/>
+                        <Setter Property="Padding" Value="10,6"/>
+                        <Setter Property="FontSize" Value="13"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -253,11 +401,12 @@
             </MenuItem>
         </Menu>
 
-        <Border Grid.Row="1" Background="#333333" Padding="10" Margin="0,5,0,0">
+        <Border Grid.Row="1" Background="#333333" Padding="10,2,0,2" Margin="0,5,0,0" BorderBrush="#33222222" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="250"/>
                 </Grid.ColumnDefinitions>
 
                 <Image Grid.Column="0" 
@@ -269,10 +418,20 @@
 
                 <TextBlock Grid.Column="1" 
                                 Text="{Binding MainHeaderText}" 
-                            FontSize="20" 
+                            FontSize="16" 
                             FontWeight="Bold" 
                             Foreground="White" 
                             VerticalAlignment="Center"/>
+
+                <Border Grid.Column="2" Background="#333333" Height="50" VerticalAlignment="Center" Padding="0,0,15,0">
+                    <Image Source="assets/arrows_solid.png"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Stretch="Uniform"
+                           Margin="0"/>
+                </Border>
+
+                <!-- Clear Selection moved to left sidebar footer -->
             </Grid>
         </Border>
 
@@ -306,7 +465,7 @@
                         <!-- Filter on the left -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
                             <TextBlock Text="Filter User:" 
-                                       FontWeight="SemiBold"
+                                       FontWeight="Normal"
                                        Foreground="Black"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -314,10 +473,7 @@
                                 <TextBox x:Name="FilterTextBox"
                                          Text="{Binding UserSearchText, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="6"
-                                         Height="32"
-                                         GotFocus="FilterTextBox_GotFocus"
-                                         LostFocus="FilterTextBox_LostFocus"
-                                         Loaded="FilterTextBox_Loaded" />
+                                         Height="32" />
                                 <TextBlock Text="Teller No, Name, Title, Department"
                                            Foreground="LightGray"
                                            VerticalAlignment="Center"
@@ -334,13 +490,34 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <Button Content="✕" Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                                        CommandParameter="{Binding ElementName=FilterTextBox}"
+                                        Click="ClearFilter_Click"
+                                        ToolTip="Clear filter">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=FilterTextBox}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
+                            <Button Content="Clear Selection"
+                                    Command="{Binding ClearAllSelectionsCommand}"
+                                    Style="{StaticResource ClearButtonStyle}"
+                                    IsEnabled="{Binding IsAnythingSelected}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <!-- View Mode anchored to the right -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBlock Text="View Mode:" 
-                                       FontWeight="SemiBold"
+                                       FontWeight="Normal"
                                        Foreground="Black"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -355,26 +532,40 @@
                         <!-- UserCountText removed per request -->
                     </Grid>
                     
-                        <DataGrid
-                            Grid.Row="1"
-                            x:Name="UsersDataGrid"
-                            Style="{StaticResource CleanDataGridStyle}"
-                            ItemsSource="{Binding AllUsersList}" 
-                            SelectedItem="{Binding SelectedUser}"
-                            IsReadOnly="True"
-                            AutoGenerateColumns="False"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
-                                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
-                                <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid Grid.Row="1">
+                            <DataGrid
+                                x:Name="UsersDataGrid"
+                                Style="{StaticResource CleanDataGridStyle}"
+                                AlternationCount="2"
+                                ItemsSource="{Binding AllUsersList}" 
+                                SelectedItem="{Binding SelectedUser}"
+                                IsReadOnly="True"
+                                AutoGenerateColumns="False"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*" MinWidth="140"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="No users to show" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=UsersDataGrid, Path=HasItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
 
                     <GridSplitter Grid.Row="2" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource SubtleGridSplitterStyle}"/>
                     
-                    <Grid Grid.Row="3" Margin="0,10,0,0">
+                    <Grid Grid.Row="3">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="3"/>
@@ -389,13 +580,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePanel1SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePanel1SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Panel1ColumnHeader}" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{Binding Panel1ColumnHeader}" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
                                                 <Path.Style>
@@ -425,7 +616,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding Panel1ItemsSource}"
                                     SelectedItem="{Binding SelectedPanel1Item}"
                                     HeadersVisibility="None"
@@ -448,13 +640,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePanel2SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePanel2SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Panel2ColumnHeader}" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{Binding Panel2ColumnHeader}" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
                                                 <Path.Style>
@@ -484,7 +676,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding Panel2ItemsSource}"
                                     SelectedItem="{Binding SelectedPanel2Item}"
                                     HeadersVisibility="None"
@@ -507,13 +700,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePanel3SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePanel3SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Panel3ColumnHeader}" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{Binding Panel3ColumnHeader}" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
                                                 <Path.Style>
@@ -543,8 +736,10 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
-                                    ItemsSource="{Binding AppPermissions}"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
+                                    ItemsSource="{Binding Panel3ItemsSource}"
+                                    SelectedItem="{Binding SelectedPanel3Item}"
                                     HeadersVisibility="None"
                                     IsReadOnly="True"
                                     AutoGenerateColumns="False"
@@ -584,13 +779,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel1SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel1SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="All Groups" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="All Groups" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
                                                 <Path.Style>
@@ -618,7 +813,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding AllGroupsList}"
                                     HeadersVisibility="None"
                                     SelectedItem="{Binding SelectedGroupTabGroup}"
@@ -641,15 +837,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel2SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel2SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Applications"/>
-                                            <Run Text="{Binding SelectedGroupTabGroup.Name, StringFormat='({0})', TargetNullValue='(Select Group)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedGroupTabGroup.Name, StringFormat='({0})', TargetNullValue='(Select Group)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -678,7 +874,7 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
                                     ItemsSource="{Binding GroupApps}"
                                     HeadersVisibility="None"
                                     SelectedItem="{Binding SelectedAppTabApp}"
@@ -701,15 +897,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel3SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleGroupTabPanel3SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Permissions"/>
-                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -762,9 +958,9 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,6">
                             <TextBlock Text="Filter Users:" 
-                                       FontWeight="SemiBold"
+                                       FontWeight="Normal"
                                        Foreground="Black"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -772,10 +968,7 @@
                                 <TextBox x:Name="GroupFilterTextBox"
                                          Text="{Binding GroupUserSearchText, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="6"
-                                         Height="32"
-                                         GotFocus="FilterTextBox_GotFocus"
-                                         LostFocus="FilterTextBox_LostFocus"
-                                         Loaded="FilterTextBox_Loaded" />
+                                         Height="32" />
                                 <TextBlock Text="Teller No, Name, Title, Department"
                                            Foreground="LightGray"
                                            VerticalAlignment="Center"
@@ -792,23 +985,65 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <Button Content="✕" Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                                        CommandParameter="{Binding ElementName=GroupFilterTextBox}"
+                                        Click="ClearFilter_Click"
+                                        ToolTip="Clear filter">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=GroupFilterTextBox}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=GroupFilterTextBox}" Value="1">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text, ElementName=GroupFilterTextBox}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
+                            <Button Content="Clear Selection"
+                                    Command="{Binding ClearAllSelectionsCommand}"
+                                    Style="{StaticResource ClearButtonStyle}"
+                                    IsEnabled="{Binding IsAnythingSelected}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <DataGrid 
-                                Grid.Row="1"
-                                Style="{StaticResource CleanDataGridStyle}"
-                                ItemsSource="{Binding GroupUsersList}" 
-                                IsReadOnly="True"
-                                AutoGenerateColumns="False"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
-                                <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid Grid.Row="1">
+                            <DataGrid
+                                    x:Name="GroupUsersDataGrid"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
+                                    ItemsSource="{Binding GroupUsersList}" 
+                                    IsReadOnly="True"
+                                    AutoGenerateColumns="False"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*" MinWidth="140"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="No users in this group" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=GroupUsersDataGrid, Path=HasItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -837,13 +1072,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel1SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel1SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="All Applications" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="All Applications" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
                                                 <Path.Style>
@@ -871,7 +1106,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding AllAppsList}"
                                     HeadersVisibility="None"
                                     SelectedItem="{Binding SelectedAppTabApp}"
@@ -894,15 +1130,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel2SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel2SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Groups"/>
-                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -931,7 +1167,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding AppGroups}"
                                     HeadersVisibility="None"
                                     IsReadOnly="True"
@@ -953,15 +1190,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel3SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding ToggleAppTabPanel3SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Permissions"/>
-                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedAppTabApp.AppName, StringFormat='({0})', TargetNullValue='(Select App)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -1008,15 +1245,15 @@
                     <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource SubtleGridSplitterStyle}"/>
 
                     <!-- Bottom section: Users for selected app (60%) -->
-                    <Grid Grid.Row="2" Margin="0,5,0,10">
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,6">
                             <TextBlock Text="Filter Users:" 
-                                       FontWeight="SemiBold"
+                                       FontWeight="Normal"
                                        Foreground="Black"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -1024,10 +1261,7 @@
                                 <TextBox x:Name="AppFilterTextBox"
                                          Text="{Binding AppUserSearchText, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="6"
-                                         Height="32"
-                                         GotFocus="FilterTextBox_GotFocus"
-                                         LostFocus="FilterTextBox_LostFocus"
-                                         Loaded="FilterTextBox_Loaded" />
+                                         Height="32" />
                                 <TextBlock Text="Teller No, Name, Title, Department"
                                            Foreground="LightGray"
                                            VerticalAlignment="Center"
@@ -1044,23 +1278,62 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <Button Content="✕" Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                                        CommandParameter="{Binding ElementName=AppFilterTextBox}"
+                                        Click="ClearFilter_Click"
+                                        ToolTip="Clear filter">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=AppFilterTextBox}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=AppFilterTextBox}" Value="1">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
+                            <Button Content="Clear Selection"
+                                    Command="{Binding ClearAllSelectionsCommand}"
+                                    Style="{StaticResource ClearButtonStyle}"
+                                    IsEnabled="{Binding IsAnythingSelected}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <DataGrid
-                                Grid.Row="1"
-                                Style="{StaticResource CleanDataGridStyle}"
-                                ItemsSource="{Binding AppUsersList}" 
-                                IsReadOnly="True"
-                                AutoGenerateColumns="False"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                        <Grid Grid.Row="1">
+                            <DataGrid
+                                    x:Name="AppUsersDataGrid"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
+                                    ItemsSource="{Binding AppUsersList}" 
+                                    IsReadOnly="True"
+                                    AutoGenerateColumns="False"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*" MinWidth="140"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="No users for this application" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=AppUsersDataGrid, Path=HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                        </Grid>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -1089,13 +1362,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel1SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel1SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="All Permissions" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="All Permissions" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
                                                 <Path.Style>
@@ -1123,7 +1396,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding AllPermissionsList}"
                                     HeadersVisibility="None"
                                     SelectedItem="{Binding SelectedPermTabPerm}"
@@ -1146,15 +1420,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel2SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel2SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Applications"/>
-                                            <Run Text="{Binding SelectedPermTabPerm.PermissionName, StringFormat='({0})', TargetNullValue='(Select Perm)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedPermTabPerm.PermissionName, StringFormat='({0})', TargetNullValue='(Select Perm)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -1183,8 +1457,10 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding PermApps}"
+                                    SelectedItem="{Binding SelectedPermTabApp}"
                                     HeadersVisibility="None"
                                     IsReadOnly="True"
                                     AutoGenerateColumns="False"
@@ -1205,15 +1481,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel3SortCommand}" Background="#F0F0F0" BorderBrush="#DDDDDD" BorderThickness="0,0,0,1" Padding="8,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                <Button Grid.Row="0" Command="{Binding TogglePermTabPanel3SortCommand}" Style="{StaticResource PanelHeaderButtonStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" FontWeight="Bold" Foreground="#4A4A4A" VerticalAlignment="Center">
                                             <Run Text="Groups"/>
-                                            <Run Text="{Binding SelectedPermTabPerm.PermissionName, StringFormat='({0})', TargetNullValue='(Select Perm)'}" FontWeight="Normal"/>
+                                            <Run Text="{Binding SelectedPermTabPerm.PermissionName, StringFormat='({0})', TargetNullValue='(Select Perm)'}"/>
                                         </TextBlock>
                                         <Grid Grid.Column="1" VerticalAlignment="Center" Width="16" Height="16" Margin="8,0,0,0">
                                             <Path Data="M 6 14 L 14 6 L 22 14 Z" Fill="#666" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
@@ -1242,7 +1518,8 @@
                                     </Grid>
                                 </Button>
                                 <DataGrid Grid.Row="1"
-                                    Style="{StaticResource CleanDataGridStyle}" MaxHeight="300"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
                                     ItemsSource="{Binding PermGroups}"
                                     HeadersVisibility="None"
                                     IsReadOnly="True"
@@ -1260,15 +1537,15 @@
                     <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource SubtleGridSplitterStyle}"/>
 
                     <!-- Bottom section: Users for selected permission (60%) -->
-                    <Grid Grid.Row="2" Margin="0,5,0,10">
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,6">
                             <TextBlock Text="Filter Users:" 
-                                       FontWeight="SemiBold"
+                                       FontWeight="Normal"
                                        Foreground="Black"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
@@ -1276,10 +1553,7 @@
                                 <TextBox x:Name="PermFilterTextBox"
                                          Text="{Binding PermUserSearchText, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="6"
-                                         Height="32"
-                                         GotFocus="FilterTextBox_GotFocus"
-                                         LostFocus="FilterTextBox_LostFocus"
-                                         Loaded="FilterTextBox_Loaded" />
+                                         Height="32" />
                                 <TextBlock Text="Teller No, Name, Title, Department"
                                            Foreground="LightGray"
                                            VerticalAlignment="Center"
@@ -1296,46 +1570,84 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
+                                <Button Content="✕" Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                                        CommandParameter="{Binding ElementName=PermFilterTextBox}"
+                                        Click="ClearFilter_Click"
+                                        ToolTip="Clear filter">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=PermFilterTextBox}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text.Length, ElementName=PermFilterTextBox}" Value="1">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
+                            <Button Content="Clear Selection"
+                                    Command="{Binding ClearAllSelectionsCommand}"
+                                    Style="{StaticResource ClearButtonStyle}"
+                                    IsEnabled="{Binding IsAnythingSelected}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <DataGrid
-                                Grid.Row="1"
-                                Style="{StaticResource CleanDataGridStyle}"
-                                ItemsSource="{Binding PermUsersList}" 
-                                IsReadOnly="True"
-                                AutoGenerateColumns="False"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
+                        <Grid Grid.Row="1">
+                            <DataGrid
+                                    x:Name="PermUsersDataGrid"
+                                    Style="{StaticResource CleanDataGridStyle}"
+                                    AlternationCount="2"
+                                    ItemsSource="{Binding PermUsersList}" 
+                                    IsReadOnly="True"
+                                    AutoGenerateColumns="False"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Teller No." Binding="{Binding SamAccountName}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Department" Binding="{Binding Department}" Width="*" MinWidth="140"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="No users with this permission" Foreground="#888" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=PermUsersDataGrid, Path=HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                        </Grid>
                     </Grid>
                 </Grid>
             </TabItem>
+            <!-- Hidden Settings tab; navigated by sidebar button -->
+            <TabItem Header="Settings" Visibility="Collapsed">
+                <Grid Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <TextBlock Text="Settings Coming Soon" FontSize="18" Foreground="#333333" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Grid>
+            </TabItem>
             </TabControl>
-
-                            <Button HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Margin="0,-2,15,0"
-                            Panel.ZIndex="100"
-                            Height="38"
-                            Content="Clear Selection"
-                            Command="{Binding ClearAllSelectionsCommand}"
-                            Style="{StaticResource ClearButtonStyle}"
-                            IsEnabled="{Binding IsAnythingSelected}"/>
         </Grid>
 
-        <StatusBar Grid.Row="3">
+        <StatusBar Grid.Row="3" Background="#E8E8E8">
+            <StatusBarItem>
+                <TextBlock Text="{Binding DataUpdatedText}" Foreground="#444444"/>
+            </StatusBarItem>
             <!-- This separator will expand to fill the available space, pushing the next item to the right -->
             <Separator/> 
             
             <!-- This item will now be on the far right -->
             <StatusBarItem DockPanel.Dock="Right">
-                <TextBlock Text="Version 1.10" 
+                <TextBlock Text="{Binding AppVersionText}" 
                            Foreground="#444444"
                            Margin="0,0,10,0"/>
             </StatusBarItem>

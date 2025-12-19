@@ -1,4 +1,4 @@
-{
+﻿{
   "DataUpdated": "2025-10-09T14:32:00",
   "groups": [
     {
@@ -14,7 +14,7 @@
       "users": [
         {
           "SamAccountName": "123456",
-          "Name": "Jane Doe",
+          "UserName": "Jane Doe",
           "Department": "Facilities-Admin",
           "Title": "Facilities, VP Facilities",
           "Manager": null
@@ -62,21 +62,21 @@
       "users": [
 	    {
           "SamAccountName": "123456",
-          "Name": "Jane Doe",
+          "UserName": "Jane Doe",
           "Department": "Facilities-Admin",
           "Title": "Facilities, VP Facilities",
           "Manager": null
         },
         {
           "SamAccountName": "1933",
-          "Name": "Dingo Doe",
+          "UserName": "Dingo Doe",
           "Department": "Compliance",
           "Title": "Compliance Officer",
           "Manager": null
         },
         {
           "SamAccountName": "1944",
-          "Name": "Jimmy Doe",
+          "UserName": "Jimmy Doe",
           "Department": "Facilities-Admin",
           "Title": "Sr Manager Administration",
           "Manager": null
@@ -191,287 +191,287 @@
       "users": [
 				  {
 					  "SamAccountName": "1995",
-					  "Name": "Jane Doe",
+					  "UserName": "Jane Doe",
 					  "Department": "Facilities-Admin",
 					  "Title": "Facilities, VP Facilities",
 					  "Manager": null
 				  },
 				  {
 					  "SamAccountName":  "1996",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Finance",
 					  "Title":  "Budget/Profitability Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "1997",
-					  "Name":  "Bill Doe",
+					  "UserName":  "Bill Doe",
 					  "Department":  "Learning and Development",
 					  "Title":  "Sales Training Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "1998",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Treasury Management",
 					  "Title":  "Treasury Mgmt Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "1999",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Account Services",
 					  "Title":  "Account Services IRA/Estate Settlement Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2000",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Account Services",
 					  "Title":  "Account Services Supervisor",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2001",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Credit Operations",
 					  "Title":  "Member Credit Solutions Operations Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2002",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Lending and Credit Systems",
 					  "Title":  "Credit Systems Analyst",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2003",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Universal Branch Associate",
 					  "Title":  "Universal Banker",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2004",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "ATM Services",
 					  "Title":  "ATM Specialist II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2005",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Account Services",
 					  "Title":  "Account Services Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2006",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Credit Operations",
 					  "Title":  "Recovery Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2007",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Account Services",
 					  "Title":  "Account Services IRA/Estate Settlement Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2008",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Card Services",
 					  "Title":  "Fraud Dispute Chargeback Specialist II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2009",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Retail Delivery Administration",
 					  "Title":  "Regional Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2010",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Credit Operations",
 					  "Title":  "Recovery Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2011",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Member Service Lender",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2012",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Learning and Development",
 					  "Title":  "Acct Svcs Tech Writer",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2013",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Treasury Management",
 					  "Title":  "Treasury Mgmt Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2014",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Fraud Intelligence",
 					  "Title":  "Fraud Analyst",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2015",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Card Services",
 					  "Title":  "Fraud Disp Charge Spec II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2016",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Card Services",
 					  "Title":  "Fraud Dispute Chargeback Coordinator",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2017",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2018",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Teller Services",
 					  "Title":  "Branch Support Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2019",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2020",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Electronic Payments",
 					  "Title":  "Electronic Payments Supervisor",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2021",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Learning and Development",
 					  "Title":  "Retail Delivery Trainer",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2022",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Safe Deposit Clerk",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2023",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Accounting",
 					  "Title":  "Accounting Manager",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2024",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager I",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2025",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Electronic Payments",
 					  "Title":  "Electronic Payments Specialist",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2026",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Accounting",
 					  "Title":  "Accounting Supervisor",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2027",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager I",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2028",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "ATM Services",
 					  "Title":  "ATM Coordinator",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2029",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Learning and Development",
 					  "Title":  "Learning and Development Training Specialist/Supervisor",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2030",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager I",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2031",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager I",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2032",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Branch Manager II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2033",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Card Services",
 					  "Title":  "Fraud Dispute Chargeback Specialist II",
 					  "Manager":  null
 				  },
 				  {
 					  "SamAccountName":  "2034",
-					  "Name":  "Jane Doe",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Learning and Development",
 					  "Title":  "Training Coordinator",
 					  "Manager":  null
 				  },
 				  {
-					  "SamAccountName":  "2035",
-					  "Name":  "Jane Doe",
+					  "SamAccountName":  "2039",
+					  "UserName":  "Jane Doe",
 					  "Department":  "Member Services",
 					  "Title":  "Safe Deposit Clerk",
 					  "Manager":  null

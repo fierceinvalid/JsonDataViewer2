@@ -5,6 +5,7 @@ using System.Linq;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Input; 
+using System.Windows.Threading;
 using JsonDataViewer.Models; 
 // The ViewMode enum is now accessed via the namespace JsonDataViewer.ViewModels
 namespace JsonDataViewer.ViewModels
@@ -36,7 +37,8 @@ namespace JsonDataViewer.ViewModels
             {
                 if (SetProperty(ref _groupViewUserSearchText, value))
                 {
-                    FilterGroupUsers(value);
+                    _groupFilterTimer.Stop();
+                    _groupFilterTimer.Start();
                 }
             }
         }
@@ -50,7 +52,8 @@ namespace JsonDataViewer.ViewModels
             {
                 if (SetProperty(ref _appUserSearchText, value))
                 {
-                    FilterAppUsers(value);
+                    _appFilterTimer.Stop();
+                    _appFilterTimer.Start();
                 }
             }
         }
@@ -64,7 +67,8 @@ namespace JsonDataViewer.ViewModels
             {
                 if (SetProperty(ref _permUserSearchText, value))
                 {
-                    FilterPermUsers(value);
+                    _permFilterTimer.Stop();
+                    _permFilterTimer.Start();
                 }
             }
         }
@@ -105,7 +109,8 @@ namespace JsonDataViewer.ViewModels
             {
                 if (SetProperty(ref _userSearchText, value))
                 {
-                    FilterUsers(value);
+                    _userFilterTimer.Stop();
+                    _userFilterTimer.Start();
                 }
             }
         }
@@ -151,11 +156,26 @@ namespace JsonDataViewer.ViewModels
             set => SelectedPerm = value;
         }
 
+        // App selected within the Permission View tab
+        public AppPermission? SelectedPermTabApp
+        {
+            get => _selectedApp;
+            set => SelectedApp = value;
+        }
+
         // Adapter properties for Permission View XAML
         public IEnumerable<AppPermission> PermApplications => PermApps;
-        public IEnumerable<Group> PermGroups => (_allGroups?.Where(g => g.AppPermissions?.Any(ap => ap.PermissionsData != null &&
-                    ap.PermissionsData.Any(p => p.Key == _selectedPerm?.PermissionCode && 
-                    (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1))) == true) ?? Enumerable.Empty<Group>()).ToList();
+        public IEnumerable<Group> PermGroups =>
+            (_allGroups != null
+                ? _allGroups.Where(g => g.AppPermissions?.Any(ap =>
+                        ((_selectedApp == null)
+                            || string.Equals(ap.AppName, _selectedApp.AppName, StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(ap.DisplayName, _selectedApp.DisplayName, StringComparison.OrdinalIgnoreCase))
+                        && ap.PermissionsData != null
+                        && ap.PermissionsData.Any(p => p.Key == _selectedPerm?.PermissionCode && (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1))
+                    ) == true)
+                : Enumerable.Empty<Group>())
+            .ToList();
 
         // ---------------------------------------------
         // VIEW MODE PROPERTIES AND CONTROL
@@ -273,6 +293,7 @@ namespace JsonDataViewer.ViewModels
         }
 
         public ICommand ClearAllSelectionsCommand { get; }
+        public ICommand NavigateToSettingsCommand { get; }
 
         private void ExecuteClearAllSelections()
         {
@@ -294,10 +315,25 @@ namespace JsonDataViewer.ViewModels
         }
 
 
+        // Debounce timers for filtering
+        private readonly DispatcherTimer _userFilterTimer;
+        private readonly DispatcherTimer _groupFilterTimer;
+        private readonly DispatcherTimer _appFilterTimer;
+        private readonly DispatcherTimer _permFilterTimer;
+
         public MainWindowViewModel(GroupData? data)
         {
             _data = data;
             _allGroups = _data?.Groups;
+            // Initialize debounce timers (200ms)
+            _userFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _userFilterTimer.Tick += (_, __) => { _userFilterTimer.Stop(); FilterUsers(_userSearchText); };
+            _groupFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _groupFilterTimer.Tick += (_, __) => { _groupFilterTimer.Stop(); FilterGroupUsers(_groupUserSearchText); };
+            _appFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _appFilterTimer.Tick += (_, __) => { _appFilterTimer.Stop(); FilterAppUsers(_appUserSearchText); };
+            _permFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _permFilterTimer.Tick += (_, __) => { _permFilterTimer.Stop(); FilterPermUsers(_permUserSearchText); };
             LoadAllUsers();
             LoadAllPermissions();
             SelectedUser = null; 
@@ -313,6 +349,7 @@ namespace JsonDataViewer.ViewModels
 
             ClearSelectedUserCommand = new RelayCommand(_ => ClearSelectedUser());
             ClearAllSelectionsCommand = new RelayCommand(_ => ExecuteClearAllSelections(), _ => IsAnythingSelected);
+            NavigateToSettingsCommand = new RelayCommand(_ => SelectedTabIndex = 4);
             TogglePanel1SortCommand = new RelayCommand(_ => TogglePanel1Sort());
             TogglePanel2SortCommand = new RelayCommand(_ => TogglePanel2Sort());
             TogglePanel3SortCommand = new RelayCommand(_ => TogglePanel3Sort());
@@ -520,6 +557,8 @@ namespace JsonDataViewer.ViewModels
                     LoadAppUsers(value);
                     OnPropertyChanged(nameof(IsAnythingSelected));
                     (ClearAllSelectionsCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    // Update dependent computed collections
+                    OnPropertyChanged(nameof(PermGroups));
                 }
             }
         }
@@ -718,6 +757,19 @@ namespace JsonDataViewer.ViewModels
             set => SetProperty(ref _mainHeaderText, value);
         }
 
+        public string AppVersionText
+        {
+            get
+            {
+                try
+                {
+                    var ver = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+                    return $"Version {ver?.Major}.{ver?.Minor}.{ver?.Build}";
+                }
+                catch { return "Version"; }
+            }
+        }
+
         public void SetHeaderForTab(int tabIndex)
         {
             MainHeaderText = tabIndex switch
@@ -726,6 +778,7 @@ namespace JsonDataViewer.ViewModels
                 1 => "Group Permission Viewer",
                 2 => "Application Permission Viewer",
                 3 => "Permission Viewer",
+                4 => "Settings",
                 _ => "AppEnhancer Permission Viewer"
             };
         }
@@ -761,6 +814,7 @@ namespace JsonDataViewer.ViewModels
             
             var allUsers = _data.Groups
                 .SelectMany(g => g.Users ?? Enumerable.Empty<User>())
+                .Where(u => u != null) // Add this line to filter out null users
                 .GroupBy(u => u.SamAccountName)
                 .Select(g => g.First())
                 .OrderBy(u => u.Name)
@@ -932,6 +986,7 @@ namespace JsonDataViewer.ViewModels
                     LoadPermissionAppsUsers(value);
                     OnPropertyChanged(nameof(IsAnythingSelected));
                     (ClearAllSelectionsCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(PermGroups));
                 }
             }
         }

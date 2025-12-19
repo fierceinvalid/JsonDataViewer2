@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Resource Include="assets\appenhancer_logo.png" />
+    <Resource Include="assets\arrows_solid.png" />
   </ItemGroup>
 
 </Project>
