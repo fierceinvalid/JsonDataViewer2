@@ -334,8 +334,25 @@ namespace JsonDataViewer.ViewModels
             _appFilterTimer.Tick += (_, __) => { _appFilterTimer.Stop(); FilterAppUsers(_appUserSearchText); };
             _permFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
             _permFilterTimer.Tick += (_, __) => { _permFilterTimer.Stop(); FilterPermUsers(_permUserSearchText); };
-            LoadAllUsers();
-            LoadAllPermissions();
+            
+            try
+            {
+                LoadAllUsers();
+            }
+            catch (Exception)
+            {
+                // Silently handle errors in LoadAllUsers
+            }
+            
+            try
+            {
+                LoadAllPermissions();
+            }
+            catch (Exception)
+            {
+                // Silently handle errors in LoadAllPermissions
+            }
+            
             SelectedUser = null; 
             
             _selectedViewModeName = ViewModeDisplayMap[CurrentViewMode];
@@ -834,8 +851,13 @@ namespace JsonDataViewer.ViewModels
             // Extract all unique permissions from all groups' apps
             var allPerms = _allGroups
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
-                .SelectMany(ap => ap.PermissionsData?.Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase) && 
-                    (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1)) ?? Enumerable.Empty<KeyValuePair<string, object>>())
+                .SelectMany(ap => ap.PermissionsData?.Where(p => 
+                    p.Key != null &&
+                    !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
+                    !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
+                    !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase) && 
+                    p.Value != null &&
+                    (int.TryParse(p.Value.ToString(), out int val) && val == 1)) ?? Enumerable.Empty<KeyValuePair<string, object>>())
                 .GroupBy(p => p.Key)
                 .Select(g => 
                 {
