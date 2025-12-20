@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Controls;
+using System.Threading.Tasks;
 
 namespace JsonDataViewer
 {
@@ -18,24 +19,41 @@ namespace JsonDataViewer
         {
             InitializeComponent();
             
+            // Load data asynchronously
+            LoadDataAsync();
+        }
+        
+        private async void LoadDataAsync()
+        {
             // Resolve data file relative to the running executable directory
             GroupData? loadedData = null;
             string jsonFilePath = ResolveJsonFilePath();
+            
             try
             {
-                string json = File.ReadAllText(jsonFilePath);
-                loadedData = JsonConvert.DeserializeObject<GroupData>(json);
+                // Show loading state (if you have a status bar or progress indicator)
+                this.Cursor = System.Windows.Input.Cursors.Wait;
+                this.Title = "User Permission Viewer - Loading...";
+                
+                // Load file asynchronously
+                string json = await Task.Run(() => File.ReadAllText(jsonFilePath));
+                loadedData = await Task.Run(() => JsonConvert.DeserializeObject<GroupData>(json));
+                
+                this.Title = "User Permission Viewer";
             }
             catch (FileNotFoundException)
             {
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
                 MessageBox.Show($"Data file not found. Tried:\n  {Path.Combine("C:\\Winstall", "group_data.json")}\n  {Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory ?? Directory.GetCurrentDirectory(), "group_data.json")}\nMake sure the file exists in one of these locations.", "File Not Found Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (JsonException ex)
             {
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
                 MessageBox.Show($"Error parsing JSON data:\n{ex.Message}\n\nPlease check that your JSON file is properly formatted.", "JSON Parsing Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
                 MessageBox.Show($"Unexpected error loading data:\n{ex.Message}\n\nThe application will continue with no data loaded.", "Data Loading Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
@@ -45,28 +63,27 @@ namespace JsonDataViewer
                 var viewModel = new MainWindowViewModel(loadedData);
                 viewModel.SetHeaderForTab(0); // Initialize with User View header
                 DataContext = viewModel;
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
             catch (Exception ex)
             {
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
                 MessageBox.Show($"Error initializing application:\n{ex.Message}\n\nThe data may contain unexpected values or null references.", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // Create a minimal ViewModel with no data to prevent further crashes
                 DataContext = new MainWindowViewModel(null);
             }
 
             // Calculate column widths based on data after data is loaded
-            Loaded += (s, e) => 
+            if (loadedData?.Groups != null)
             {
-                if (loadedData?.Groups != null)
-                {
-                    // User View: All users from all groups
-                    var allUsers = loadedData.Groups.SelectMany(g => g.Users).ToList();
-                    if (UsersDataGrid != null)
-                        AutoCalculateColumnWidths(UsersDataGrid, allUsers);
+                // User View: All users from all groups
+                var allUsers = loadedData.Groups.SelectMany(g => g.Users).ToList();
+                if (UsersDataGrid != null)
+                    AutoCalculateColumnWidths(UsersDataGrid, allUsers);
 
-                    // Group View, App View, Permission View will auto-update as users select items
-                    // because the ViewModel's observable collections will be re-bound
-                }
-            };
+                // Group View, App View, Permission View will auto-update as users select items
+                // because the ViewModel's observable collections will be re-bound
+            }
         }
 
         // --- XAML Menu Click Handlers (Resolves CS1061 errors) ---

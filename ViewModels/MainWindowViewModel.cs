@@ -16,6 +16,11 @@ namespace JsonDataViewer.ViewModels
     {
         private GroupData? _data;
         private List<Group>? _allGroups;
+        
+        // Performance caches for large datasets
+        private Dictionary<string, List<Group>>? _userGroupsCache;
+        private Dictionary<string, List<AppPermission>>? _userAppsCache;
+        private List<AppPermission>? _allAppsCache;
 
         public CollectionViewSource UsersView { get; } = new CollectionViewSource();
         public CollectionViewSource GroupUsersView { get; } = new CollectionViewSource();
@@ -84,7 +89,22 @@ namespace JsonDataViewer.ViewModels
         // XAML-friendly collections / properties (adapters)
         public System.ComponentModel.ICollectionView? AllUsersList => UsersView.View;
         public IEnumerable<Group> AllGroupsList => _allGroups ?? Enumerable.Empty<Group>();
-        public IEnumerable<AppPermission> AllAppsList => (_allGroups?.SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()).GroupBy(ap => ap.AppName).Select(g => g.First()).OrderBy(ap => ap.AppName) ?? Enumerable.Empty<AppPermission>()).ToList();
+        public IEnumerable<AppPermission> AllAppsList
+        {
+            get
+            {
+                if (_allAppsCache == null && _allGroups != null)
+                {
+                    _allAppsCache = _allGroups
+                        .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                        .GroupBy(ap => ap.AppName)
+                        .Select(g => g.First())
+                        .OrderBy(ap => ap.AppName)
+                        .ToList();
+                }
+                return _allAppsCache ?? Enumerable.Empty<AppPermission>();
+            }
+        }
         public IEnumerable<Permission> AllPermissionsList => AllPermissions.OrderBy(p => p.PermissionName);
 
         public ObservableCollection<DetailViewModeItem> DetailViewModes { get; } = new ObservableCollection<DetailViewModeItem>();
@@ -325,6 +345,33 @@ namespace JsonDataViewer.ViewModels
         {
             _data = data;
             _allGroups = _data?.Groups;
+            
+            // Initialize performance caches
+            _userGroupsCache = new Dictionary<string, List<Group>>();
+            _userAppsCache = new Dictionary<string, List<AppPermission>>();
+            
+            // Build user-groups lookup cache for faster queries
+            if (_allGroups != null)
+            {
+                foreach (var group in _allGroups)
+                {
+                    if (group.Users != null)
+                    {
+                        foreach (var user in group.Users)
+                        {
+                            if (!string.IsNullOrEmpty(user.SamAccountName))
+                            {
+                                if (!_userGroupsCache.ContainsKey(user.SamAccountName))
+                                {
+                                    _userGroupsCache[user.SamAccountName] = new List<Group>();
+                                }
+                                _userGroupsCache[user.SamAccountName].Add(group);
+                            }
+                        }
+                    }
+                }
+            }
+            
             // Initialize debounce timers (200ms)
             _userFilterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
             _userFilterTimer.Tick += (_, __) => { _userFilterTimer.Stop(); FilterUsers(_userSearchText); };
@@ -599,27 +646,44 @@ namespace JsonDataViewer.ViewModels
             
             if (user == null) return; 
 
-            switch (CurrentViewMode)
+            try
             {
-                case ViewMode.UserGroupAppPerm:
-                    LoadUserGroupAppPerm(user);
-                    break;
-                case ViewMode.UserAppGroupPerm:
-                    LoadUserAppGroupPerm(user);
-                    break;
-                case ViewMode.UserPermAppGroup:
-                    LoadUserPermAppGroup(user);
-                    break;
+                switch (CurrentViewMode)
+                {
+                    case ViewMode.UserGroupAppPerm:
+                        LoadUserGroupAppPerm(user);
+                        break;
+                    case ViewMode.UserAppGroupPerm:
+                        LoadUserAppGroupPerm(user);
+                        break;
+                    case ViewMode.UserPermAppGroup:
+                        LoadUserPermAppGroup(user);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading user details:\n{ex.Message}\n\nTry selecting a different user or view mode.", "Data Loading Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
 
         private void LoadUserGroupAppPerm(User user)
         {
-            if (_allGroups == null) return; 
+            if (_allGroups == null) return;
             
-            var groups = _allGroups
-                .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
-                .ToList();
+            // Use cache if available for better performance
+            List<Group> groups;
+            if (_userGroupsCache != null && _userGroupsCache.TryGetValue(user.SamAccountName, out var cachedGroups))
+            {
+                groups = cachedGroups;
+            }
+            else
+            {
+                groups = _allGroups
+                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .ToList();
+            }
+            
             groups.ForEach(g => UserGroups.Add(g));
             
             SelectedGroup = UserGroups.FirstOrDefault(); 
@@ -627,10 +691,22 @@ namespace JsonDataViewer.ViewModels
 
         private void LoadUserAppGroupPerm(User user)
         {
-            if (_allGroups == null) return; 
+            if (_allGroups == null) return;
             
-            var appsForUser = _allGroups
-                .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+            // Use cache if available
+            List<Group> userGroups;
+            if (_userGroupsCache != null && _userGroupsCache.TryGetValue(user.SamAccountName, out var cachedGroups))
+            {
+                userGroups = cachedGroups;
+            }
+            else
+            {
+                userGroups = _allGroups
+                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .ToList();
+            }
+            
+            var appsForUser = userGroups
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
                 .GroupBy(ap => ap.AppName)
                 .Select(g => g.First())
@@ -643,13 +719,30 @@ namespace JsonDataViewer.ViewModels
 
         private void LoadUserPermAppGroup(User user)
         {
-            if (_allGroups == null) return; 
+            if (_allGroups == null) return;
+            
+            // Use cache if available
+            List<Group> userGroups;
+            if (_userGroupsCache != null && _userGroupsCache.TryGetValue(user.SamAccountName, out var cachedGroups))
+            {
+                userGroups = cachedGroups;
+            }
+            else
+            {
+                userGroups = _allGroups
+                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .ToList();
+            }
 
-            var allGrantedPerms = _allGroups
-                .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+            var allGrantedPerms = userGroups
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
                 .SelectMany(ap => ap.PermissionsData ?? Enumerable.Empty<KeyValuePair<string, object>>())
-                .Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase) && p.Value.ToString() == "1")
+                .Where(p => p.Key != null &&
+                            !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
+                            !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
+                            !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase) && 
+                            p.Value != null &&
+                            (int.TryParse(p.Value.ToString(), out int value) && value == 1))
                 .GroupBy(p => p.Key)
                 .Select(g => g.First())
                 .ToList();
@@ -695,7 +788,7 @@ namespace JsonDataViewer.ViewModels
 
                     var appsForPerm = _allGroups
                         .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
-                        .Where(ap => ap.PermissionsData?.Any(p => p.Key == permCode && p.Value.ToString() == "1") == true)
+                        .Where(ap => ap.PermissionsData?.Any(p => p.Key == permCode && p.Value != null && p.Value.ToString() == "1") == true)
                         .GroupBy(ap => ap.AppName)
                         .Select(g => g.First())
                         .ToList();
@@ -731,8 +824,11 @@ namespace JsonDataViewer.ViewModels
                     if (selectedItem.PermissionsData == null) return;
                     
                     var permissions = selectedItem.PermissionsData
-                        .Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase))
-                        .Where(p => (int.TryParse(p.Value.ToString() ?? "", out int value) && value == 1)) 
+                        .Where(p => p.Key != null &&
+                                    !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
+                                    !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
+                                    !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase))
+                        .Where(p => p.Value != null && (int.TryParse(p.Value.ToString(), out int value) && value == 1)) 
                         
                         .Select(p => 
                         {
