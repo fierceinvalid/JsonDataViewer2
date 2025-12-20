@@ -632,10 +632,7 @@ namespace JsonDataViewer.ViewModels
                 .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
                 .SelectMany(ap => ap.PermissionsData ?? Enumerable.Empty<KeyValuePair<string, object>>())
-                .Where(p => !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
-                            !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
-                            !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase) && 
-                            (int.TryParse(p.Value.ToString() ?? "", out int value) && value == 1))
+                .Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase) && p.Value.ToString() == "1")
                 .GroupBy(p => p.Key)
                 .Select(g => g.First())
                 .ToList();
@@ -717,9 +714,7 @@ namespace JsonDataViewer.ViewModels
                     if (selectedItem.PermissionsData == null) return;
                     
                     var permissions = selectedItem.PermissionsData
-                        .Where(p => !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
-                                    !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
-                                    !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase))
+                        .Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase))
                         .Where(p => (int.TryParse(p.Value.ToString() ?? "", out int value) && value == 1)) 
                         
                         .Select(p => 
@@ -839,10 +834,7 @@ namespace JsonDataViewer.ViewModels
             // Extract all unique permissions from all groups' apps
             var allPerms = _allGroups
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
-                .SelectMany(ap => ap.PermissionsData?.Where(p => 
-                    !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
-                    !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
-                    !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase) && 
+                .SelectMany(ap => ap.PermissionsData?.Where(p => p.Key.StartsWith("perm", StringComparison.OrdinalIgnoreCase) && 
                     (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1)) ?? Enumerable.Empty<KeyValuePair<string, object>>())
                 .GroupBy(p => p.Key)
                 .Select(g => 

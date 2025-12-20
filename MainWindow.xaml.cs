@@ -32,13 +32,26 @@ namespace JsonDataViewer
             }
             catch (JsonException ex)
             {
-                MessageBox.Show($"Error deserializing JSON data:\n{ex.Message}", "JSON Parsing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error parsing JSON data:\n{ex.Message}\n\nPlease check that your JSON file is properly formatted.", "JSON Parsing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unexpected error loading data:\n{ex.Message}\n\nThe application will continue with no data loaded.", "Data Loading Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             // Set the DataContext to the ViewModel
-            var viewModel = new MainWindowViewModel(loadedData);
-            viewModel.SetHeaderForTab(0); // Initialize with User View header
-            DataContext = viewModel;
+            try
+            {
+                var viewModel = new MainWindowViewModel(loadedData);
+                viewModel.SetHeaderForTab(0); // Initialize with User View header
+                DataContext = viewModel;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing application:\n{ex.Message}\n\nThe data may contain unexpected values or null references.", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Create a minimal ViewModel with no data to prevent further crashes
+                DataContext = new MainWindowViewModel(null);
+            }
 
             // Calculate column widths based on data after data is loaded
             Loaded += (s, e) => 
@@ -68,7 +81,15 @@ namespace JsonDataViewer
                 var loadedData = JsonConvert.DeserializeObject<GroupData>(json);
                 if (loadedData != null)
                 {
-                    DataContext = new MainWindowViewModel(loadedData);
+                    try
+                    {
+                        DataContext = new MainWindowViewModel(loadedData);
+                        MessageBox.Show("Data reloaded successfully.", "Reload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error processing reloaded data:\n{ex.Message}\n\nThe data may contain unexpected values or null references.", "Processing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
@@ -81,7 +102,11 @@ namespace JsonDataViewer
             }
             catch (JsonException ex)
             {
-                MessageBox.Show($"Error deserializing JSON data on reload:\n{ex.Message}", "JSON Parsing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error parsing JSON data:\n{ex.Message}\n\nPlease check that your JSON file is properly formatted.", "JSON Parsing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unexpected error reloading data:\n{ex.Message}", "Reload Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
         }
