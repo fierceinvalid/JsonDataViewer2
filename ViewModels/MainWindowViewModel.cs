@@ -96,7 +96,9 @@ namespace JsonDataViewer.ViewModels
                 if (_allAppsCache == null && _allGroups != null)
                 {
                     _allAppsCache = _allGroups
+                        .Where(g => g != null && g.AppPermissions != null) // Filter out groups with null appPermissions
                         .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                        .Where(ap => ap != null && !string.IsNullOrEmpty(ap.AppName)) // Filter out null apps
                         .GroupBy(ap => ap.AppName)
                         .Select(g => g.First())
                         .OrderBy(ap => ap.AppName)
@@ -186,14 +188,14 @@ namespace JsonDataViewer.ViewModels
         // Adapter properties for Permission View XAML
         public IEnumerable<AppPermission> PermApplications => PermApps;
         public IEnumerable<Group> PermGroups =>
-            (_allGroups != null
-                ? _allGroups.Where(g => g.AppPermissions?.Any(ap =>
+            (_allGroups != null && _selectedPerm != null
+                ? _allGroups.Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null &&
                         ((_selectedApp == null)
                             || string.Equals(ap.AppName, _selectedApp.AppName, StringComparison.OrdinalIgnoreCase)
                             || string.Equals(ap.DisplayName, _selectedApp.DisplayName, StringComparison.OrdinalIgnoreCase))
                         && ap.PermissionsData != null
-                        && ap.PermissionsData.Any(p => p.Key == _selectedPerm?.PermissionCode && (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1))
-                    ) == true)
+                        && ap.PermissionsData.Any(p => p.Key == _selectedPerm.PermissionCode && p.Value != null && (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1))
+                    ))
                 : Enumerable.Empty<Group>())
             .ToList();
 
@@ -355,18 +357,19 @@ namespace JsonDataViewer.ViewModels
             {
                 foreach (var group in _allGroups)
                 {
-                    if (group.Users != null)
+                    // Skip groups with null or empty users list
+                    if (group?.Users == null || group.Users.Count == 0)
+                        continue;
+                        
+                    foreach (var user in group.Users)
                     {
-                        foreach (var user in group.Users)
+                        if (user != null && !string.IsNullOrEmpty(user.SamAccountName))
                         {
-                            if (!string.IsNullOrEmpty(user.SamAccountName))
+                            if (!_userGroupsCache.ContainsKey(user.SamAccountName))
                             {
-                                if (!_userGroupsCache.ContainsKey(user.SamAccountName))
-                                {
-                                    _userGroupsCache[user.SamAccountName] = new List<Group>();
-                                }
-                                _userGroupsCache[user.SamAccountName].Add(group);
+                                _userGroupsCache[user.SamAccountName] = new List<Group>();
                             }
+                            _userGroupsCache[user.SamAccountName].Add(group);
                         }
                     }
                 }
@@ -601,8 +604,15 @@ namespace JsonDataViewer.ViewModels
             {
                 if (SetProperty(ref _selectedGroup, value))
                 {
-                    UpdateGroupApps(value);
-                    LoadGroupUsers(value);
+                    try
+                    {
+                        UpdateGroupApps(value);
+                        LoadGroupUsers(value);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show($"Error loading group details:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Group Selection Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    }
                     OnPropertyChanged(nameof(IsAnythingSelected));
                     (ClearAllSelectionsCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 }
@@ -680,11 +690,12 @@ namespace JsonDataViewer.ViewModels
             else
             {
                 groups = _allGroups
-                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .Where(g => g != null && g.Users?.Any(u => u != null && u.SamAccountName == user.SamAccountName) == true)
                     .ToList();
             }
             
-            groups.ForEach(g => UserGroups.Add(g));
+            // Filter out any null groups before adding
+            groups.Where(g => g != null).ToList().ForEach(g => UserGroups.Add(g));
             
             SelectedGroup = UserGroups.FirstOrDefault(); 
         }
@@ -702,12 +713,14 @@ namespace JsonDataViewer.ViewModels
             else
             {
                 userGroups = _allGroups
-                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .Where(g => g != null && g.Users?.Any(u => u != null && u.SamAccountName == user.SamAccountName) == true)
                     .ToList();
             }
             
             var appsForUser = userGroups
+                .Where(g => g != null && g.AppPermissions != null) // Filter out groups with null AppPermissions
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
+                .Where(ap => ap != null && !string.IsNullOrEmpty(ap.AppName)) // Filter out null apps
                 .GroupBy(ap => ap.AppName)
                 .Select(g => g.First())
                 .ToList();
@@ -730,12 +743,14 @@ namespace JsonDataViewer.ViewModels
             else
             {
                 userGroups = _allGroups
-                    .Where(g => g.Users?.Any(u => u.SamAccountName == user.SamAccountName) == true)
+                    .Where(g => g != null && g.Users?.Any(u => u != null && u.SamAccountName == user.SamAccountName) == true)
                     .ToList();
             }
 
             var allGrantedPerms = userGroups
-                .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
+                .Where(g => g != null && g.AppPermissions != null) // Filter out groups with null AppPermissions
+                .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                .Where(ap => ap != null && ap.PermissionsData != null) // Filter out null apps and null PermissionsData
                 .SelectMany(ap => ap.PermissionsData ?? Enumerable.Empty<KeyValuePair<string, object>>())
                 .Where(p => p.Key != null &&
                             !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
@@ -767,7 +782,14 @@ namespace JsonDataViewer.ViewModels
             if (selectedItem == null || _allGroups == null) return;
             
             // Always add the group's applications (works for both User View and Group View tab)
-            selectedItem.AppPermissions?.ToList().ForEach(ap => GroupApps.Add(ap));
+            // Filter out null app permissions
+            if (selectedItem.AppPermissions != null)
+            {
+                selectedItem.AppPermissions
+                    .Where(ap => ap != null)
+                    .ToList()
+                    .ForEach(ap => GroupApps.Add(ap));
+            }
             
             // Also handle User View mode-specific logic for permutation views
             switch (CurrentViewMode)
@@ -775,7 +797,7 @@ namespace JsonDataViewer.ViewModels
                 case ViewMode.UserAppGroupPerm:
                     GroupApps.Clear();
                     var groupsForApp = _allGroups
-                        .Where(g => g.AppPermissions?.Any(ap => ap.AppName == selectedItem.GroupName) == true)
+                        .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.GroupName))
                         .ToList();
                         
                     groupsForApp.ForEach(g => GroupApps.Add(new AppPermission { AppName = g.GroupName })); 
@@ -787,8 +809,9 @@ namespace JsonDataViewer.ViewModels
                     if (string.IsNullOrEmpty(permCode)) return;
 
                     var appsForPerm = _allGroups
-                        .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>()) 
-                        .Where(ap => ap.PermissionsData?.Any(p => p.Key == permCode && p.Value != null && p.Value.ToString() == "1") == true)
+                        .Where(g => g != null && g.AppPermissions != null) // Filter null groups and null AppPermissions
+                        .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                        .Where(ap => ap != null && ap.PermissionsData?.Any(p => p.Key == permCode && p.Value != null && p.Value.ToString() == "1") == true)
                         .GroupBy(ap => ap.AppName)
                         .Select(g => g.First())
                         .ToList();
@@ -809,9 +832,10 @@ namespace JsonDataViewer.ViewModels
             
             // Populate AppGroups - groups that have this application
             var groupsWithApp = _allGroups
-                .Where(g => g.AppPermissions?.Any(ap => 
+                .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => 
+                    ap != null && (
                     string.Equals(ap.AppName, selectedItem.AppName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(ap.DisplayName, selectedItem.DisplayName, StringComparison.OrdinalIgnoreCase)) == true)
+                    string.Equals(ap.DisplayName, selectedItem.DisplayName, StringComparison.OrdinalIgnoreCase))))
                 .ToList();
             
             groupsWithApp.ForEach(g => AppGroups.Add(g));
@@ -846,7 +870,7 @@ namespace JsonDataViewer.ViewModels
                     
                 case ViewMode.UserPermAppGroup:
                     var groups = _allGroups
-                        .Where(g => g.AppPermissions?.Any(ap => ap.AppName == selectedItem.AppName) == true)
+                        .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.AppName))
                         .ToList();
                         
                     groups.ForEach(g => AppPermissions.Add(new Permission { PermissionName = g.GroupName })); 
@@ -926,11 +950,12 @@ namespace JsonDataViewer.ViewModels
             if (_data?.Groups == null) return;
             
             var allUsers = _data.Groups
+                .Where(g => g != null && g.Users != null) // Filter out groups with null users
                 .SelectMany(g => g.Users ?? Enumerable.Empty<User>())
-                .Where(u => u != null) // Add this line to filter out null users
+                .Where(u => u != null && !string.IsNullOrEmpty(u.SamAccountName)) // Filter out null users
                 .GroupBy(u => u.SamAccountName)
                 .Select(g => g.First())
-                .OrderBy(u => u.Name)
+                .OrderBy(u => u.Name ?? string.Empty)
                 .ToList();
                 
             UsersView.Source = allUsers;
@@ -946,7 +971,9 @@ namespace JsonDataViewer.ViewModels
 
             // Extract all unique permissions from all groups' apps
             var allPerms = _allGroups
+                .Where(g => g != null && g.AppPermissions != null) // Filter out groups with null appPermissions
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                .Where(ap => ap != null && ap.PermissionsData != null) // Filter out null app permissions
                 .SelectMany(ap => ap.PermissionsData?.Where(p => 
                     p.Key != null &&
                     !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
@@ -1015,7 +1042,10 @@ namespace JsonDataViewer.ViewModels
                 return;
             }
 
-            var users = group.Users ?? new List<User>();
+            // Filter out null users before passing to DataGrid
+            var users = (group.Users ?? new List<User>())
+                .Where(u => u != null)
+                .ToList();
             GroupUsersView.Source = users;
             FilterGroupUsers(_groupUserSearchText);
             OnPropertyChanged(nameof(GroupUsersList));
@@ -1056,11 +1086,12 @@ namespace JsonDataViewer.ViewModels
             }
 
             var users = _allGroups
-                .Where(g => g.AppPermissions?.Any(ap => string.Equals(ap.AppName, app.AppName, StringComparison.OrdinalIgnoreCase) || string.Equals(ap.DisplayName, app.DisplayName, StringComparison.OrdinalIgnoreCase)) == true)
+                .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && (string.Equals(ap.AppName, app.AppName, StringComparison.OrdinalIgnoreCase) || string.Equals(ap.DisplayName, app.DisplayName, StringComparison.OrdinalIgnoreCase))))
                 .SelectMany(g => g.Users ?? Enumerable.Empty<User>())
+                .Where(u => u != null && !string.IsNullOrEmpty(u.SamAccountName)) // Filter out null users
                 .GroupBy(u => u.SamAccountName)
                 .Select(g => g.First())
-                .OrderBy(u => u.Name)
+                .OrderBy(u => u.Name ?? string.Empty)
                 .ToList();
 
             AppUsersView.Source = users;
@@ -1122,10 +1153,11 @@ namespace JsonDataViewer.ViewModels
 
             // Load all applications that have this permission
             var appsWithPerm = _allGroups
+                .Where(g => g != null && g.AppPermissions != null) // Filter null groups and null AppPermissions
                 .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
-                .Where(ap => ap.PermissionsData != null && 
-                    ap.PermissionsData.Any(p => p.Key == perm.PermissionCode && 
-                    (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1)))
+                .Where(ap => ap != null && ap.PermissionsData != null && 
+                    ap.PermissionsData.Any(p => p.Key == perm.PermissionCode && p.Value != null &&
+                    (int.TryParse(p.Value.ToString(), out int val) && val == 1)))
                 .GroupBy(ap => ap.AppName)
                 .Select(g => g.First())
                 .OrderBy(ap => ap.AppName)
@@ -1135,13 +1167,14 @@ namespace JsonDataViewer.ViewModels
 
             // Load all users that have this permission (through groups that have apps with this permission)
             var usersWithPerm = _allGroups
-                .Where(g => g.AppPermissions?.Any(ap => ap.PermissionsData != null &&
-                    ap.PermissionsData.Any(p => p.Key == perm.PermissionCode && 
-                    (int.TryParse(p.Value.ToString() ?? "", out int val) && val == 1))) == true)
+                .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.PermissionsData != null &&
+                    ap.PermissionsData.Any(p => p.Key == perm.PermissionCode && p.Value != null &&
+                    (int.TryParse(p.Value.ToString(), out int val) && val == 1))))
                 .SelectMany(g => g.Users ?? Enumerable.Empty<User>())
+                .Where(u => u != null && !string.IsNullOrEmpty(u.SamAccountName)) // Filter out null users
                 .GroupBy(u => u.SamAccountName)
                 .Select(g => g.First())
-                .OrderBy(u => u.Name)
+                .OrderBy(u => u.Name ?? string.Empty)
                 .ToList();
 
             PermUsersView.Source = usersWithPerm;
