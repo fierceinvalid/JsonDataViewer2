@@ -781,43 +781,63 @@ namespace JsonDataViewer.ViewModels
             
             if (selectedItem == null || _allGroups == null) return;
             
-            // Always add the group's applications (works for both User View and Group View tab)
-            // Filter out null app permissions
-            if (selectedItem.AppPermissions != null)
+            // For User View modes, filter based on what the selected user has access to
+            if (_selectedUser != null && SelectedTabIndex == 0)
             {
-                selectedItem.AppPermissions
-                    .Where(ap => ap != null)
-                    .ToList()
-                    .ForEach(ap => GroupApps.Add(ap));
-            }
-            
-            // Also handle User View mode-specific logic for permutation views
-            switch (CurrentViewMode)
-            {
-                case ViewMode.UserAppGroupPerm:
-                    GroupApps.Clear();
-                    var groupsForApp = _allGroups
-                        .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.GroupName))
-                        .ToList();
+                switch (CurrentViewMode)
+                {
+                    case ViewMode.UserGroupAppPerm:
+                        // Show only applications that the user has in this specific group
+                        if (selectedItem.AppPermissions != null)
+                        {
+                            selectedItem.AppPermissions
+                                .Where(ap => ap != null)
+                                .ToList()
+                                .ForEach(ap => GroupApps.Add(ap));
+                        }
+                        break;
                         
-                    groupsForApp.ForEach(g => GroupApps.Add(new AppPermission { AppName = g.GroupName })); 
-                    break;
-                    
-                case ViewMode.UserPermAppGroup:
-                    GroupApps.Clear();
-                    string? permCode = selectedItem.SamAccountName; 
-                    if (string.IsNullOrEmpty(permCode)) return;
+                    case ViewMode.UserAppGroupPerm:
+                        // Show only groups that the user is a member of for this application
+                        var userGroups = _allGroups
+                            .Where(g => g != null && g.Users != null && g.Users.Any(u => u != null && u.SamAccountName == _selectedUser.SamAccountName))
+                            .Where(g => g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.GroupName))
+                            .ToList();
+                            
+                        userGroups.ForEach(g => GroupApps.Add(new AppPermission { AppName = g.GroupName })); 
+                        break;
+                        
+                    case ViewMode.UserPermAppGroup:
+                        string? permCode = selectedItem.SamAccountName; 
+                        if (string.IsNullOrEmpty(permCode)) break;
 
-                    var appsForPerm = _allGroups
-                        .Where(g => g != null && g.AppPermissions != null) // Filter null groups and null AppPermissions
-                        .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
-                        .Where(ap => ap != null && ap.PermissionsData?.Any(p => p.Key == permCode && p.Value != null && p.Value.ToString() == "1") == true)
-                        .GroupBy(ap => ap.AppName)
-                        .Select(g => g.First())
-                        .ToList();
-                        
-                    appsForPerm.ForEach(ap => GroupApps.Add(ap));
-                    break;
+                        // Show only applications where the user has this permission (through their groups)
+                        var userGroupsList = _allGroups
+                            .Where(g => g != null && g.Users != null && g.Users.Any(u => u != null && u.SamAccountName == _selectedUser.SamAccountName))
+                            .ToList();
+
+                        var appsForPerm = userGroupsList
+                            .Where(g => g.AppPermissions != null)
+                            .SelectMany(g => g.AppPermissions ?? Enumerable.Empty<AppPermission>())
+                            .Where(ap => ap != null && ap.PermissionsData?.Any(p => p.Key == permCode && p.Value != null && p.Value.ToString() == "1") == true)
+                            .GroupBy(ap => ap.AppName)
+                            .Select(g => g.First())
+                            .ToList();
+                            
+                        appsForPerm.ForEach(ap => GroupApps.Add(ap));
+                        break;
+                }
+            }
+            else
+            {
+                // For Group View tab, show all applications in the group
+                if (selectedItem.AppPermissions != null)
+                {
+                    selectedItem.AppPermissions
+                        .Where(ap => ap != null)
+                        .ToList()
+                        .ForEach(ap => GroupApps.Add(ap));
+                }
             }
 
             SelectedApp = GroupApps.FirstOrDefault();
@@ -830,51 +850,112 @@ namespace JsonDataViewer.ViewModels
 
             if (selectedItem == null || _allGroups == null) return;
             
-            // Populate AppGroups - groups that have this application
-            var groupsWithApp = _allGroups
-                .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => 
-                    ap != null && (
-                    string.Equals(ap.AppName, selectedItem.AppName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(ap.DisplayName, selectedItem.DisplayName, StringComparison.OrdinalIgnoreCase))))
-                .ToList();
-            
-            groupsWithApp.ForEach(g => AppGroups.Add(g));
-
-            switch (CurrentViewMode)
+            // For User View modes, filter based on what the selected user has access to
+            if (_selectedUser != null && SelectedTabIndex == 0)
             {
-                case ViewMode.UserGroupAppPerm:
-                case ViewMode.UserAppGroupPerm:
-                    
-                    if (selectedItem.PermissionsData == null) return;
-                    
+                switch (CurrentViewMode)
+                {
+                    case ViewMode.UserGroupAppPerm:
+                        // Show only permissions that the user has for this app (through selected group)
+                        if (_selectedGroup != null && selectedItem.PermissionsData != null)
+                        {
+                            var permissions = selectedItem.PermissionsData
+                                .Where(p => p.Key != null &&
+                                            !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
+                                            !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
+                                            !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase))
+                                .Where(p => p.Value != null && (int.TryParse(p.Value.ToString(), out int value) && value == 1))
+                                .Select(p => 
+                                {
+                                    string permissionCode = p.Key;
+                                    return new Permission
+                                    {
+                                        PermissionName = permissionCode,
+                                        PermissionCode = permissionCode,
+                                    };
+                                }).ToList();
+                            
+                            permissions.ForEach(p => AppPermissions.Add(p));
+                        }
+                        break;
+                        
+                    case ViewMode.UserAppGroupPerm:
+                        // Show only permissions that the user has for this app (through selected group)
+                        if (_selectedGroup != null)
+                        {
+                            // Get the app permission from the selected group
+                            var appInGroup = _selectedGroup.AppPermissions?
+                                .FirstOrDefault(ap => ap != null && ap.AppName == selectedItem.AppName);
+                                
+                            if (appInGroup?.PermissionsData != null)
+                            {
+                                var permissions = appInGroup.PermissionsData
+                                    .Where(p => p.Key != null &&
+                                                !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
+                                                !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
+                                                !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase))
+                                    .Where(p => p.Value != null && (int.TryParse(p.Value.ToString(), out int value) && value == 1))
+                                    .Select(p => 
+                                    {
+                                        string permissionCode = p.Key;
+                                        return new Permission
+                                        {
+                                            PermissionName = permissionCode,
+                                            PermissionCode = permissionCode,
+                                        };
+                                    }).ToList();
+                                
+                                permissions.ForEach(p => AppPermissions.Add(p));
+                            }
+                        }
+                        break;
+                        
+                    case ViewMode.UserPermAppGroup:
+                        // Show only groups that the user is a member of for this app
+                        var userGroupsForApp = _allGroups
+                            .Where(g => g != null && 
+                                   g.Users != null && 
+                                   g.Users.Any(u => u != null && u.SamAccountName == _selectedUser.SamAccountName) &&
+                                   g.AppPermissions != null && 
+                                   g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.AppName))
+                            .ToList();
+                            
+                        userGroupsForApp.ForEach(g => AppPermissions.Add(new Permission { PermissionName = g.GroupName })); 
+                        break;
+                }
+            }
+            else
+            {
+                // For Group/App View tabs, populate AppGroups and show all permissions
+                var groupsWithApp = _allGroups
+                    .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => 
+                        ap != null && (
+                        string.Equals(ap.AppName, selectedItem.AppName, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ap.DisplayName, selectedItem.DisplayName, StringComparison.OrdinalIgnoreCase))))
+                    .ToList();
+                
+                groupsWithApp.ForEach(g => AppGroups.Add(g));
+
+                if (selectedItem.PermissionsData != null)
+                {
                     var permissions = selectedItem.PermissionsData
                         .Where(p => p.Key != null &&
                                     !string.Equals(p.Key, "appId", StringComparison.OrdinalIgnoreCase) && 
                                     !string.Equals(p.Key, "userId", StringComparison.OrdinalIgnoreCase) && 
                                     !string.Equals(p.Key, "appName", StringComparison.OrdinalIgnoreCase))
-                        .Where(p => p.Value != null && (int.TryParse(p.Value.ToString(), out int value) && value == 1)) 
-                        
+                        .Where(p => p.Value != null && (int.TryParse(p.Value.ToString(), out int value) && value == 1))
                         .Select(p => 
                         {
                             string permissionCode = p.Key;
-                            
                             return new Permission
                             {
-                                PermissionName = permissionCode, // Use the code directly
+                                PermissionName = permissionCode,
                                 PermissionCode = permissionCode,
                             };
                         }).ToList();
                     
                     permissions.ForEach(p => AppPermissions.Add(p));
-                    break;
-                    
-                case ViewMode.UserPermAppGroup:
-                    var groups = _allGroups
-                        .Where(g => g != null && g.AppPermissions != null && g.AppPermissions.Any(ap => ap != null && ap.AppName == selectedItem.AppName))
-                        .ToList();
-                        
-                    groups.ForEach(g => AppPermissions.Add(new Permission { PermissionName = g.GroupName })); 
-                    break;
+                }
             }
         }
         
